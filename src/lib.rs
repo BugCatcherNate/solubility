@@ -1,14 +1,23 @@
 
 use csv::{Reader};
 use serde::Deserialize;
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Record {
-    id: i32,
-    solvent: String,
-    d_d: f32,
-    d_p: f32,
-    d_h: f32
+   pub id: i32,
+    pub solvent: String,
+   pub  d_d: f32,
+    pub d_p: f32,
+   pub  d_h: f32
 
+}
+
+
+pub fn distance(a: &Record, b: &Record) -> f32{
+
+        
+    let num = (b.d_d-a.d_d).powi(2) + (b.d_p-a.d_p).powi(2) + (b.d_h-a.d_h).powi(2);  
+    let res = num.sqrt();
+    res
 }
 
 pub fn read_solvents(path: String) -> Vec<Record>{
@@ -21,3 +30,4 @@ pub fn read_solvents(path: String) -> Vec<Record>{
     }
     solvents
 }
+
