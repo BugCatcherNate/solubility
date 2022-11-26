@@ -1,5 +1,9 @@
+use bincode;
 use csv::Reader;
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
+use std::fs::File;
+use std::io::Read;
 #[derive(Debug, Deserialize, Clone)]
 pub struct Record {
     pub id: i32,
@@ -59,6 +63,14 @@ pub fn read_solvents(path: String) -> Vec<Record> {
         solvents.push(record);
     }
     solvents
+}
+
+pub fn read_struct<'a, T: DeserializeOwned>(filename: &str) -> T {
+    let mut file = File::open(filename).unwrap();
+    let mut buffer = Vec::<u8>::new();
+    file.read_to_end(&mut buffer).unwrap();
+    let decoded: T = bincode::deserialize(&buffer[..]).unwrap();
+    decoded
 }
 
 pub fn read_drugs(path: String) -> Vec<Drug> {
