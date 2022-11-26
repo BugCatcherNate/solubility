@@ -1,6 +1,6 @@
 use csv::Reader;
 use serde::Deserialize;
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Record {
     pub id: i32,
     pub solvent: String,
@@ -17,10 +17,10 @@ pub struct Drug {
     pub d_h: f32,
 }
 
-#[derive(Debug)]
-pub struct SolventMix<'solvent> {
-    pub solvent_a: &'solvent Record,
-    pub solvent_b: &'solvent Record,
+#[derive(Debug, Clone)]
+pub struct SolventMix {
+    pub solvent_a: String,
+    pub solvent_b: String,
     pub ratio_a: f32,
     pub ratio_b: f32,
     pub d_d: f32,
@@ -34,18 +34,14 @@ pub fn distance(a: &SolventMix, b: &Drug) -> f32 {
     res
 }
 
-pub fn mixture<'solvent>(
-    a: &'solvent Record,
-    b: &'solvent Record,
-    r_a: f32,
-) -> SolventMix<'solvent> {
+pub fn mixture(a: &Record, b: &Record, r_a: f32) -> SolventMix {
     let r_b: f32 = 1.0 - r_a;
     let mix_d_d: f32 = r_a * a.d_d + r_b * b.d_d;
     let mix_d_p: f32 = r_a * a.d_p + r_b * b.d_p;
     let mix_d_h: f32 = r_a * a.d_h + r_b * b.d_h;
     let new_blend = SolventMix {
-        solvent_a: a,
-        solvent_b: b,
+        solvent_a: a.solvent.clone(),
+        solvent_b: b.solvent.clone(),
         ratio_a: r_a,
         ratio_b: r_b,
         d_d: mix_d_d,

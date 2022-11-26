@@ -2,13 +2,16 @@ use hansen::{distance, mixture, read_drugs, read_solvents, Drug, Record};
 use std::thread;
 
 fn main() {
-    let drugs: Vec<Drug> = read_drugs("drug_list.csv".to_string());
+    let drugs: Vec<Drug> = read_drugs("data/drug_list.csv".to_string());
     let mut handles = Vec::new();
+    let solves: Vec<Record> = read_solvents("data/solvents.csv".to_string());
     for drug in drugs {
+        let solvs = solves.clone();
         let handle = thread::spawn(move || {
-            let solvs: Vec<Record> = read_solvents("solvents.csv".to_string());
             println!("Starting Thread: {}", drug.drug);
             let mut closest: f32 = f32::MAX;
+            let mut closest_a: String = "".to_string();
+            let mut closest_b: String = "".to_string();
             for solvent_a in &solvs {
                 let solvent_a: &Record = &solvent_a;
                 for solvent_b in &solvs {
@@ -19,11 +22,13 @@ fn main() {
                     let c: f32 = distance(&new_mix, &drug);
                     if closest > c {
                         closest = c;
+                        closest_a = new_mix.solvent_a;
+                        closest_b = new_mix.solvent_b;
                     }
                 }
             }
 
-            println!("{:}", closest);
+            println!("{},{}", closest_a, closest_b);
         });
         handles.push(handle)
     }
