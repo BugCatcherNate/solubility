@@ -2,7 +2,7 @@ use csv::Reader;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 #[derive(Debug, Deserialize, Clone)]
-pub struct Record {
+pub struct Solvent {
     pub id: i32,
     pub solvent: String,
     pub d_d: f32,
@@ -35,7 +35,7 @@ pub fn distance(a: &SolventMix, b: &Drug) -> f32 {
     res
 }
 
-pub fn mixture(a: &Record, b: &Record, r_a: f32) -> SolventMix {
+pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
     let r_b: f32 = 1.0 - r_a;
     let mix_d_d: f32 = r_a * a.d_d + r_b * b.d_d;
     let mix_d_p: f32 = r_a * a.d_p + r_b * b.d_p;
@@ -52,9 +52,8 @@ pub fn mixture(a: &Record, b: &Record, r_a: f32) -> SolventMix {
     new_blend
 }
 
-pub fn read_struct<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
+pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
-
     let mut drugs: Vec<T> = Vec::new();
     for result in reader.deserialize() {
         let record: T = result.unwrap();
