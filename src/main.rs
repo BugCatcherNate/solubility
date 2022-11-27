@@ -18,9 +18,9 @@ fn main() {
                     let solvent_b: &Solvent = &solvent_b;
 
                     let new_mix = mixture(solvent_a, solvent_b, 0.5);
-                    let new_line = line_segment(solvent_a, solvent_b);
+                    let (start, end) = line_segment(solvent_a, solvent_b);
 
-                    let c: f32 = distance(&new_mix, &drug);
+                    let c: f32 = distance(&start, &drug);
                     if closest > c {
                         closest = c;
                         closest_a = new_mix.solvent_a;
