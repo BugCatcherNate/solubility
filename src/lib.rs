@@ -1,9 +1,6 @@
-use bincode;
 use csv::Reader;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
-use std::fs::File;
-use std::io::Read;
 #[derive(Debug, Deserialize, Clone)]
 pub struct Record {
     pub id: i32,
@@ -55,29 +52,12 @@ pub fn mixture(a: &Record, b: &Record, r_a: f32) -> SolventMix {
     new_blend
 }
 
-pub fn read_solvents(path: String) -> Vec<Record> {
+pub fn read_struct<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
-    let mut solvents: Vec<Record> = Vec::new();
-    for result in reader.deserialize() {
-        let record: Record = result.unwrap();
-        solvents.push(record);
-    }
-    solvents
-}
 
-pub fn read_struct<'a, T: DeserializeOwned>(filename: &str) -> T {
-    let mut file = File::open(filename).unwrap();
-    let mut buffer = Vec::<u8>::new();
-    file.read_to_end(&mut buffer).unwrap();
-    let decoded: T = bincode::deserialize(&buffer[..]).unwrap();
-    decoded
-}
-
-pub fn read_drugs(path: String) -> Vec<Drug> {
-    let mut reader = Reader::from_path(path).unwrap();
-    let mut drugs: Vec<Drug> = Vec::new();
+    let mut drugs: Vec<T> = Vec::new();
     for result in reader.deserialize() {
-        let record: Drug = result.unwrap();
+        let record: T = result.unwrap();
         drugs.push(record);
     }
     drugs

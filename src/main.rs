@@ -1,10 +1,10 @@
-use hansen::{distance, mixture, read_drugs, read_solvents, read_struct, Drug, Record};
+use hansen::{distance, mixture, read_struct, Drug, Record};
 use std::thread;
 
 fn main() {
-    let drugs: Vec<Drug> = read_struct::<Vec<Drug>>("data/drug_list.csv");
+    let drugs: Vec<Drug> = read_struct::<Drug>("data/drug_list.csv".to_string());
     let mut handles = Vec::new();
-    let solves: Vec<Record> = read_solvents("data/solvents.csv".to_string());
+    let solves: Vec<Record> = read_struct::<Record>("data/solvents.csv".to_string());
     for drug in drugs {
         let solvs = solves.clone();
         let handle = thread::spawn(move || {
