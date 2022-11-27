@@ -52,6 +52,16 @@ pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
     new_blend
 }
 
+pub fn line_segment(a: &Solvent, b: &Solvent) -> (SolventMix, SolventMix) {
+
+
+    let start: SolventMix = mixture(a, b, 0.9);
+    let end: SolventMix = mixture(a, b, 0.1);
+    
+    (start, end)
+
+}
+
 pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();
