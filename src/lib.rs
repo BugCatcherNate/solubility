@@ -28,6 +28,14 @@ pub struct SolventMix {
     pub sol_params: Vector3<f32>,
 }
 
+
+#[derive(Debug, Clone)]
+pub struct Solution {
+
+    pub solvent_a: String,
+    pub solvent_b: String, 
+    pub distance: f32
+}
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {
     let drug_params: Vector3<f32> = Vector3::new(drug.d_d, drug.d_p, drug.d_h);
     let num: f32 = Vector3::norm(&(end - start).cross(&(start - drug_params)));  
