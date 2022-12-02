@@ -17,19 +17,16 @@ fn main() {
                 for solvent_b in &solvs {
                     let solvent_b: &Solvent = &solvent_b;
 
-                    let new_mix = mixture(solvent_a, solvent_b, 0.5);
                     let (start, end) = line_segment(solvent_a, solvent_b);
 
                     let c: f32 = distance(&drug, &start, &end);
                     if closest > c {
                         closest = c;
-                        closest_a = new_mix.solvent_a;
-                        closest_b = new_mix.solvent_b;
                     }
                 }
             }
 
-            println!("{},{}", closest_a, closest_b);
+            println!("{}", closest);
         });
         handles.push(handle)
     }
