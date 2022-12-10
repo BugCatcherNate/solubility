@@ -1,18 +1,16 @@
 use hansen::{distance, line_segment, read_data, Solution, Drug, Solvent};
 use std::env;
+use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
-use std::thread;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     let max_results: usize = args[1].parse::<usize>().unwrap();
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
-    let mut handles = Vec::new();
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
-    for drug in drugs {
+    drugs.into_par_iter().for_each( |drug| {
 
         let solvs = solves.clone();
-        let handle = thread::spawn(move || {
 
             let mut top_mixes: Vec<Solution> = Vec::with_capacity(max_results);
             println!("Starting Thread: {}", drug.drug);
@@ -44,10 +42,6 @@ fn main() {
 
             println!("{:?}", top_mixes);
         });
-        handles.push(handle)
     }
 
-    for handle in handles {
-        handle.join().unwrap();
-    }
-}
+
