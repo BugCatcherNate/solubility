@@ -1,7 +1,7 @@
 use csv::Reader;
 use nalgebra::{Vector3};
 use serde::de::DeserializeOwned;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Clone)]
 pub struct Solvent {
     pub id: i32,
@@ -29,7 +29,7 @@ pub struct SolventMix {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Solution {
 
     pub solvent_a: String,
@@ -70,6 +70,19 @@ pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
 
 }
 
+pub fn write_data(solution: Vec<Solution>, path: String){
+
+    let mut wrt = csv::Writer::from_path(path).unwrap();
+
+    for sol in solution {
+
+        wrt.serialize(sol).unwrap();
+
+    }
+
+    wrt.flush().unwrap();
+
+}
 pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();

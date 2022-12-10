@@ -1,4 +1,4 @@
-use hansen::{distance, line_segment, read_data, Solution, Drug, Solvent};
+use hansen::{distance, line_segment, read_data, Solution, Drug, Solvent, write_data};
 use std::env;
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
@@ -39,8 +39,7 @@ fn main() {
 
                 }
             }
-
-            println!("{:?}", top_mixes);
+            write_data(top_mixes, "out.csv".to_string());
         });
     }
 
