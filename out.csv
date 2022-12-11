@@ -1,0 +1,101 @@
+solvent_a,solvent_b,distance
+"1,2-Dimethoxybenzene",3-Methoxyisopropylamine,1.2937853e-7
+4-Hydroxybutyraldehyde,n-Aminoethyl Piperazine,0.0000010546787
+2-Methyl-3-Ethylphenol,Methyl 4-Phenyl Butyrate,0.0000013420589
+2-Methyl-6-Ethylphenol,Methyl 4-Phenyl Butyrate,0.0000013420589
+"1,2,4-Triethylbenzene",3-Methyl-5-Ethylphenol,0.0004250288
+"1,3,5-Triethylbenzene",3-Methyl-5-Ethylphenol,0.0004250288
+Eicosamethylnonasiloxane,Tetradecanoic Acid,0.00076284376
+"3-Methyl-1,5-Pentanediol",m-Ethylphenol,0.0008850633
+3-Methyl-5-Ethylphenol,Para-Cresyl 10-Undecylenate,0.0010795514
+2-Methyl-2-Hexene,Chavicol,0.0012508294
+"3,3-Dimethylcyclopentene",Chavicol,0.0013289609
+Chavicol,Isoamyl Laurate,0.001329164
+"1,5-Dimethylcyclopentene",p-Vinylphenol,0.0014388753
+Chavicol,Tetradecylamine,0.0015421865
+Benzyl Mercaptan,n-Butyl Salicylate,0.0016058366
+6-Decenoic Acid,Isodecanol,0.001728924
+6-Decenoic Acid,Isodecanol   (8-Methyl-1-Nonanol),0.001728924
+Amyl Undecylenate,Chavicol,0.0017297972
+Chavicol,Ocimen-1-Yl Acetate,0.0017299929
+Chavicol,Tridecenyl Propionate,0.0017299929
+"3,5-Xylenol",4-Methyl-3-Thiahexane,0.0017340163
+"2,4,6-Trihydroxybenzoic Acid",Rhubarb Pyran,0.001848403
+"4,4-Dimethyl-Cis-2-Pentene",4-Propylphenol,0.0019206393
+"4,4-Dimethyl-Trans-2-Pentene",4-Propylphenol,0.0019206393
+2-Methyl-4-Ethylphenol,Cubebol,0.001967749
+2-Methyl-5-Ethylphenol,Cubebol,0.001967749
+3-Methyl-4-Ethylphenol,Cubebol,0.001967749
+3-Methyl-6-Ethylphenol,Cubebol,0.001967749
+4-Methyl-2-Ethylphenol,Cubebol,0.001967749
+4-Methyl-3-Ethylphenol,Cubebol,0.001967749
+o-Cymene,Sinapyl Alcohol,0.001968146
+2-Phenoxyethanol Acetate,"Phosphoric Acid, Isodecyl Diphenyl Ester",0.002122106
+"1,1,1-Trichlorooctane",2-Methyl-4-Ethylphenol,0.0022071223
+"1,1,1-Trichlorooctane",2-Methyl-5-Ethylphenol,0.0022071223
+"1,1,1-Trichlorooctane",3-Methyl-4-Ethylphenol,0.0022071223
+"1,1,1-Trichlorooctane",3-Methyl-6-Ethylphenol,0.0022071223
+"1,1,1-Trichlorooctane",4-Methyl-2-Ethylphenol,0.0022071223
+"1,1,1-Trichlorooctane",4-Methyl-3-Ethylphenol,0.0022071223
+Chavicol,Di-Tet-Butyl Sulfide,0.0022119298
+"1,2-Benzenediol",2-Methyl-4-Ethylphenol,0.0022942813
+"1,2-Benzenediol",2-Methyl-5-Ethylphenol,0.0022942813
+"1,2-Benzenediol",3-Methyl-4-Ethylphenol,0.0022942813
+"1,2-Benzenediol",3-Methyl-6-Ethylphenol,0.0022942813
+"1,2-Benzenediol",4-Methyl-2-Ethylphenol,0.0022942813
+"1,2-Benzenediol",4-Methyl-3-Ethylphenol,0.0022942813
+Chavicol,Ethyl Safranate,0.0023408185
+DDT,p-Ethylaniline,0.0024112526
+2-Isobutyl Thiazole,2-Methyl-3-Ethylphenol,0.0024178915
+2-Isobutyl Thiazole,2-Methyl-6-Ethylphenol,0.0024178915
+Acetal 318,Chavicol,0.002466619
+2-Methyl-4-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+2-Methyl-5-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+3-Methyl-4-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+3-Methyl-6-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+4-Methyl-2-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+4-Methyl-3-Ethylphenol,4-Tert-Butylaniline,0.0025481428
+"2,3,4,5,6-Pentachlorotoluene",2-Buten-1-ol,0.0026263732
+"2,3,4,5,6-Pentachlorotoluene",Cis-2-Butene-1-ol,0.0026263732
+"3,5-Xylenol",Dehydroxylinalool Oxide,0.0026331663
+"3,4-Dimethyl-2-Thiapentane","3,5-Xylenol",0.002634632
+Phenethyl Tiglate,Trans-Cinnamic Acid,0.0026446034
+Cinnamic Acid,Phenethyl Tiglate,0.002644725
+"1,4-Hexanediol",m-Ethylphenol,0.0026747335
+"1,2,3-Triethylbenzene",3-Methyl-5-Ethylphenol,0.0026851303
+Chavicol,Methyl Cyclogeranate,0.0028111446
+"3,5-Xylenol",Cyclohexyl Methacrylate,0.0028382172
+(E)-2-Nonen-1-Yl Acetate,Octyl Isobutyrate,0.0028608628
+(Z)-3-Nonen-1-Yl Acetate,Octyl Isobutyrate,0.0028608628
+4-Butylphenol,Tetrahydroionyl Acetate,0.002866501
+1-Tetradecyne,4-Butylphenol,0.0029967553
+2-Methyl-1-Nonene,Chavicol,0.003004686
+"2,3-Xylenol",2-Methyl-1-Heptene,0.003015192
+"1,1,3,4-Tetrachlorohexafluorobutane(F-316Lbc)",Chavicol,0.0030559555
+2-Amino-1-Propanol,m-Ethylphenol,0.0030576657
+Apple Crotonate,"N,N'-Dimethylpiperazine",0.0030619514
+2-Iodo-1-Butene,2-Methyl-3-Ethylphenol,0.0031488382
+2-Iodo-1-Butene,2-Methyl-6-Ethylphenol,0.0031488382
+4-Propylphenol,Diisobutyl Carbinyl Acetate,0.0032176967
+Benzaldehyde Oxime (Mp 30),Geranyl Anthranilate,0.0032303177
+Benzaldehyde Oxime (Mp 30),Neryl Anthranilate,0.0032303177
+"1,1-Difluorotetradecane",Chavicol,0.003235388
+2-Methyl-4-Ethylphenol,Carotol,0.0032413835
+2-Methyl-5-Ethylphenol,Carotol,0.0032413835
+3-Methyl-4-Ethylphenol,Carotol,0.0032413835
+3-Methyl-6-Ethylphenol,Carotol,0.0032413835
+4-Methyl-2-Ethylphenol,Carotol,0.0032413835
+4-Methyl-3-Ethylphenol,Carotol,0.0032413835
+2-Methylthiophene,Glyceric Acid,0.0032449963
+3-Methylthiophene,Glyceric Acid,0.0032449963
+"2,4-Xylenol",Bornylene,0.0032510716
+"2,5-Xylenol",Bornylene,0.0032510716
+"2,4-Xylenol",Trans-1-Chloro-1-Nonadecene,0.0032580935
+"2,5-Xylenol",Trans-1-Chloro-1-Nonadecene,0.0032580935
+2-Octadecanone,"3,5-Xylenol",0.0032677043
+2-Methylnaphthalene,m-Ethylphenol,0.0032725055
+"1,1,1-Trichlorohexane",2-Methyl-4-Ethylphenol,0.0032743302
+"1,1,1-Trichlorohexane",2-Methyl-5-Ethylphenol,0.0032743302
+"1,1,1-Trichlorohexane",3-Methyl-4-Ethylphenol,0.0032743302
+"1,1,1-Trichlorohexane",3-Methyl-6-Ethylphenol,0.0032743302
+"1,1,1-Trichlorohexane",4-Methyl-2-Ethylphenol,0.0032743302

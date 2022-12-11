@@ -31,7 +31,7 @@ pub struct SolventMix {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
-
+    pub mix_id : (i32, i32),
     pub solvent_a: String,
     pub solvent_b: String, 
     pub distance: f32
