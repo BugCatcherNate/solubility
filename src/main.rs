@@ -1,6 +1,6 @@
-use hansen::{distance, line_segment, cantor, read_data, write_data, Drug, Solution, Solvent};
+use hansen::{distance, line_segment, write_hash, cantor, read_data, write_data, Drug, Solution, Solvent};
+use std::time::{Duration, Instant};
 use std::collections::HashMap;
-use std::collections::hash_map::RandomState;
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::env;
@@ -16,6 +16,7 @@ fn main() {
 
         let mut top_mixes: Vec<Solution> = Vec::with_capacity(max_results);
         println!("Starting Thread: {}", drug.drug);
+        let start = Instant::now();
         for solvent_a in &solvs {
             let solvent_a: &Solvent = &solvent_a;
             for solvent_b in &solvs {
@@ -46,11 +47,22 @@ fn main() {
                 }
             }
         }
+        let duration = start.elapsed();
+        println!("Finished Thread: {} in {:?} ", drug.drug, duration);
         top_mixes
     });
 
     let res: Vec<Solution> = par_iter.flatten().collect();
 
-    println!("{:?}",res);
- 
+    for r in res {
+        let new_count = match counts.get(&r.mix_id) {
+            Some(count) => count + 1,
+            None => 1
+        };
+        counts.insert(r.mix_id, new_count);
+
+    }
+    let mut count_vec: Vec<_> = counts.iter().collect();
+    count_vec.sort_by(|a,b| b.1.cmp(a.1));
+    write_hash(count_vec.split_at(50).0.to_vec(), "res.csv".to_string());
 }

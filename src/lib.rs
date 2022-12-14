@@ -92,6 +92,20 @@ pub fn write_data(solution: Vec<Solution>, path: String){
     wrt.flush().unwrap();
 
 }
+
+pub fn write_hash(solution: Vec<(&i32,&i32)>, path: String){
+
+    let mut wrt = csv::Writer::from_path(path).unwrap();
+
+    for sol in solution {
+
+        wrt.serialize(sol).unwrap();
+
+    }
+
+    wrt.flush().unwrap();
+
+}
 pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();
