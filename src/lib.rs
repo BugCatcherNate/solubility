@@ -32,8 +32,6 @@ pub struct SolventMix {
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
     pub mix_id : i32,
-    pub solvent_a: String,
-    pub solvent_b: String, 
     pub distance: f32
 }
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {

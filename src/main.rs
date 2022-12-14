@@ -1,26 +1,27 @@
 use hansen::{
-    cantor, distance, line_segment, read_data, write_data, write_hash, Drug, Solution, Solvent,
+    cantor, distance, line_segment, read_data, write_hash, Drug, Solution, Solvent,
 };
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::env;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 fn main() {
     let mut counts: HashMap<i32, i32> = HashMap::new();
     let args: Vec<String> = env::args().collect();
     let max_results: usize = args[1].parse::<usize>().unwrap();
+
+    let max_capacity: usize = 1000000;
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
     let par_iter = drugs.into_par_iter().map(|drug| {
         let solvs = solves.clone();
-
-        let mut top_mixes: Vec<Solution> = Vec::with_capacity(10000);
+        let mut temp_capacity: usize = max_capacity.clone();
+        let mut top_mixes: Vec<Solution> = Vec::with_capacity(max_capacity);
         println!("Starting Thread: {}", drug.drug);
         let start = Instant::now();
         for solvent_a in &solvs {
-            println!("{}, {}", drug.drug, solvent_a.id.to_string());
             let solvent_a: &Solvent = &solvent_a;
             for solvent_b in &solvs {
                 if solvent_a.id < solvent_b.id {
@@ -32,13 +33,11 @@ fn main() {
                     let c: f32 = distance(&drug, &start, &end);
                     let temp_solution = Solution {
                         mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
-                        solvent_a: temp_solvent_a.solvent,
-                        solvent_b: temp_solvent_b.solvent,
-                        distance: c,
+                        distance: c
                     };
-                    if top_mixes.is_empty() || top_mixes.len() < max_results {
+                    if top_mixes.is_empty() || top_mixes.len() < temp_capacity {
                         top_mixes.push(temp_solution);
-                        if top_mixes.len() == max_results {
+                        if top_mixes.len() == temp_capacity {
                             top_mixes.sort_by(|a, b| {
                                 a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
                             });
@@ -50,9 +49,11 @@ fn main() {
                                 a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
                             });
  
-                        if top_mixes.len() > max_results {
+                        if top_mixes.len() > temp_capacity {
                             top_mixes.pop();
                         }
+
+                        temp_capacity *= 2;
                     }
                 }
             }
