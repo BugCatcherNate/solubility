@@ -31,7 +31,7 @@ pub struct SolventMix {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
-    pub mix_id : (i32, i32),
+    pub mix_id : i32,
     pub solvent_a: String,
     pub solvent_b: String, 
     pub distance: f32
@@ -43,6 +43,15 @@ pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {
 
     let res = num/dom;
     res
+}
+
+pub fn cantor(a: i32, b: i32) -> i32 {
+
+
+    let sum: i32 = a + b;
+    let triangle_sum: i32 = sum * (sum + 1)/2; 
+    triangle_sum + b
+
 }
 
 pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {

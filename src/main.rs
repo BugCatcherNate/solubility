@@ -1,4 +1,4 @@
-use hansen::{distance, line_segment, read_data, write_data, Drug, Solution, Solvent};
+use hansen::{distance, line_segment, cantor, read_data, write_data, Drug, Solution, Solvent};
 use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
 use rayon::prelude::*;
@@ -6,12 +6,12 @@ use std::cmp::Ordering::Equal;
 use std::env;
 
 fn main() {
-    let mut counts: HashMap<(i32,i32), i32> = HashMap::new(); 
+    let mut counts: HashMap<i32, i32> = HashMap::new(); 
     let args: Vec<String> = env::args().collect();
     let max_results: usize = args[1].parse::<usize>().unwrap();
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
-    drugs.into_par_iter().for_each(|drug| {
+    let par_iter = drugs.into_par_iter().map(|drug| {
         let solvs = solves.clone();
 
         let mut top_mixes: Vec<Solution> = Vec::with_capacity(max_results);
@@ -27,7 +27,7 @@ fn main() {
                     let temp_solvent_b = solvent_b.clone();
                     let c: f32 = distance(&drug, &start, &end);
                     let temp_solution = Solution {
-                        mix_id: (temp_solvent_a.id, temp_solvent_b.id),
+                        mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
                         solvent_a: temp_solvent_a.solvent,
                         solvent_b: temp_solvent_b.solvent,
                         distance: c,
@@ -46,10 +46,11 @@ fn main() {
                 }
             }
         }
-        for mix in top_mixes {
-
-           counts.insert(mix.mix_id, 1); 
-        }
-        write_data(top_mixes, "out.csv".to_string());
+        top_mixes
     });
+
+    let res: Vec<Solution> = par_iter.flatten().collect();
+
+    println!("{:?}",res);
+ 
 }
