@@ -32,8 +32,8 @@ pub struct SolventMix {
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
     pub mix_id : i32,
-    pub solvent_a: Solvent,
-    pub solvent_b: Solvent,
+    pub solvent_a: i32,
+    pub solvent_b: i32,
     pub distance: f32
 }
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {
@@ -66,7 +66,6 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
     let mut r_b: f32 = 1.0 - r_a;
     let mut last_diff = 1000000000.0;
     while r_a >= 0.1 {
-        println!("{},{}",r_a, r_b);
         let a_x: f32 = r_a * a.d_d + r_b * b.d_d;
         let a_y: f32 = r_a * a.d_p + r_b * b.d_p;
         let a_z: f32 = r_a * a.d_h + r_b * b.d_h;
