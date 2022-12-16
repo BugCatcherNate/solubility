@@ -2,7 +2,7 @@ use csv::Reader;
 use nalgebra::{Vector3};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Solvent {
     pub id: i32,
     pub solvent: String,
@@ -32,6 +32,8 @@ pub struct SolventMix {
 #[derive(Debug, Clone, Serialize)]
 pub struct Solution {
     pub mix_id : i32,
+    pub solvent_a: Solvent,
+    pub solvent_b: Solvent,
     pub distance: f32
 }
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {
@@ -49,6 +51,36 @@ pub fn cantor(a: i32, b: i32) -> i32 {
     let sum: i32 = a + b;
     let triangle_sum: i32 = sum * (sum + 1)/2; 
     triangle_sum + b
+
+}
+
+pub fn standard_dist(a_x: f32, a_y: f32, a_z: f32, b_x: f32, b_y: f32, b_z: f32) -> f32 {
+
+        ((b_x - a_x).powi(2) + (b_y - a_y).powi(2) + (b_z - a_z).powi(2)).sqrt()
+
+
+}
+
+pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32) {
+    let mut r_a: f32 = 0.9;
+    let mut r_b: f32 = 1.0 - r_a;
+    let mut last_diff = 1000000000.0;
+    while r_a >= 0.1 {
+        println!("{},{}",r_a, r_b);
+        let a_x: f32 = r_a * a.d_d + r_b * b.d_d;
+        let a_y: f32 = r_a * a.d_p + r_b * b.d_p;
+        let a_z: f32 = r_a * a.d_h + r_b * b.d_h;
+        let temp_dist = standard_dist(a_x, a_y, a_z, drug.d_d, drug.d_p, drug.d_h);
+        let dist_diff = temp_dist - dist;
+        if dist_diff >= last_diff{
+            break;
+        }else{
+        r_a -= 0.01;
+        r_b = 1.0 - r_a;
+        last_diff = dist_diff;
+        }
+    }
+    (r_a, r_b)
 
 }
 
