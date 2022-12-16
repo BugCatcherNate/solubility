@@ -73,7 +73,7 @@ fn main() {
             let solv_b : Solvent = solvs.clone().into_iter().find(|s| s.id == mix.solvent_b).unwrap();
 
             let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
-            println!("{} : {}, {} : {}", solv_a.solvent, x_a, solv_b.solvent, x_b);
+            println!("{} : {:.2}, {} : {:.2}", solv_a.solvent, x_a, solv_b.solvent, x_b);
 
         }
         let duration = start.elapsed();
