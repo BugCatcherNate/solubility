@@ -11,7 +11,7 @@ pub struct Solvent {
     pub d_h: f32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Drug {
     pub drug: String,
     pub d_d: f32,
@@ -130,6 +130,20 @@ pub fn write_data(solution: Vec<Solution>, path: String){
 }
 
 pub fn write_hash(solution: Vec<(&i32,&i32)>, path: String){
+
+    let mut wrt = csv::Writer::from_path(path).unwrap();
+
+    for sol in solution {
+
+        wrt.serialize(sol).unwrap();
+
+    }
+
+    wrt.flush().unwrap();
+
+}
+
+pub fn write_results(solution: Vec<(String, i32, String, f32, String, f32)>, path: String){
 
     let mut wrt = csv::Writer::from_path(path).unwrap();
 

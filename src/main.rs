@@ -1,7 +1,6 @@
 use hansen::{
-    cantor, distance, line_segment, read_data, write_hash, Drug, Solution, Solvent, mix_solver
+    cantor, distance, line_segment, read_data, write_hash, Drug, Solution, Solvent, write_results, mix_solver
 };
-use std::mem;
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
@@ -15,7 +14,6 @@ fn main() {
 
     let max_capacity: usize = 100000;
 
-    println!("array size: {}", mem::size_of::<Solution>());
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
     let par_iter = drugs.into_par_iter().map(|drug| {
@@ -66,23 +64,25 @@ fn main() {
         }
 
         let final_mixes = top_mixes.split_at(max_results).0.to_vec();
-        for mix in &final_mixes {
+        let mut final_results: Vec<(String, i32, String, f32, String, f32)> = Vec::new();
+        for mix in final_mixes {
 
             let solv_a : Solvent = solvs.clone().into_iter().find(|s| s.id == mix.solvent_a).unwrap();
 
             let solv_b : Solvent = solvs.clone().into_iter().find(|s| s.id == mix.solvent_b).unwrap();
 
             let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
-            println!("{} : {:.2}, {} : {:.2}", solv_a.solvent, x_a, solv_b.solvent, x_b);
+            final_results.push((drug.drug, mix.mix_id, solv_a.solvent, x_a * 100.0, solv_b.solvent, x_b * 100.0));
 
         }
         let duration = start.elapsed();
         println!("Finished Thread: {} in {:?} ", drug.drug, duration);
-        final_mixes
-    });
+        (final_mixes, final_results)
+    }).unzip();
+    let res: Vec<Solution> = par_iter.0.flatten().collect();
+    let res_mix:  Vec<(String, i32, String, f32, String, f32)> = par_iter.1.flatten().collect();
 
-    let res: Vec<Solution> = par_iter.flatten().collect();
-
+    write_results(res_mix, "results.csv".to_string());
     for r in res {
         let new_count = match counts.get(&r.mix_id) {
             Some(count) => count + 1,
