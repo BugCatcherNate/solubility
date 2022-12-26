@@ -36,6 +36,17 @@ pub struct Solution {
     pub solvent_b: i32,
     pub distance: f32
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FinalSolution {
+    pub drug: String,
+    pub mix_id: i32,
+    pub solvent_a: String,
+    pub solvent_a_ratio: f32,
+    pub solvent_b: String,
+    pub solvent_b_ratio: f32,
+    pub hansen_distance: f32,
+}
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32> ) -> f32 {
     let drug_params: Vector3<f32> = Vector3::new(drug.d_d, drug.d_p, drug.d_h);
     let num: f32 = Vector3::norm(&(end - start).cross(&(start - drug_params)));  
@@ -143,7 +154,7 @@ pub fn write_hash(solution: Vec<(&i32,&i32)>, path: String){
 
 }
 
-pub fn write_results(solution: Vec<(String, i32, String, f32, String, f32)>, path: String){
+pub fn write_results(solution: Vec<FinalSolution>, path: String){
 
     let mut wrt = csv::Writer::from_path(path).unwrap();
 

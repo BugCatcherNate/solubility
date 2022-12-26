@@ -1,5 +1,5 @@
 use hansen::{
-    cantor, distance, line_segment, read_data, write_hash, Drug, Solution, Solvent, write_results, mix_solver
+    cantor, distance, line_segment, read_data, write_hash, Drug, Solution, Solvent, FinalSolution, write_results, mix_solver
 };
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
@@ -17,6 +17,7 @@ fn main() {
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
     let par_iter = drugs.into_par_iter().map(|drug| {
+
         let solvs = solves.clone();
         let mut temp_capacity: usize = max_capacity.clone();
         let mut top_mixes: Vec<Solution> = Vec::new();
@@ -64,25 +65,27 @@ fn main() {
         }
 
         let final_mixes = top_mixes.split_at(max_results).0.to_vec();
-        let mut final_results: Vec<(String, i32, String, f32, String, f32)> = Vec::new();
-        for mix in final_mixes {
+        let mut final_results: Vec<FinalSolution> = Vec::new();
+        for mix in &final_mixes {
 
             let solv_a : Solvent = solvs.clone().into_iter().find(|s| s.id == mix.solvent_a).unwrap();
 
             let solv_b : Solvent = solvs.clone().into_iter().find(|s| s.id == mix.solvent_b).unwrap();
 
             let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
-            final_results.push((drug.drug, mix.mix_id, solv_a.solvent, x_a * 100.0, solv_b.solvent, x_b * 100.0));
+            let temp_res: FinalSolution = FinalSolution { drug: drug.clone().drug, mix_id: mix.mix_id, solvent_a: solv_a.solvent, solvent_b: solv_b.solvent, hansen_distance: mix.distance, solvent_a_ratio: x_a * 100.0, solvent_b_ratio: x_b * 100.0};
+            final_results.push(temp_res);
 
         }
         let duration = start.elapsed();
         println!("Finished Thread: {} in {:?} ", drug.drug, duration);
-        (final_mixes, final_results)
-    }).unzip();
-    let res: Vec<Solution> = par_iter.0.flatten().collect();
-    let res_mix:  Vec<(String, i32, String, f32, String, f32)> = par_iter.1.flatten().collect();
+        final_results
+    });
+    let res: Vec<FinalSolution> = par_iter.flatten().collect();
+    //let res_mix:  Vec<(String, i32, String, f32, String, f32)> = par_iter.1.flatten().collect();
 
-    write_results(res_mix, "results.csv".to_string());
+    write_results(res.clone(), "results.csv".to_string());
+
     for r in res {
         let new_count = match counts.get(&r.mix_id) {
             Some(count) => count + 1,
