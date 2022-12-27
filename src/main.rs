@@ -2,6 +2,7 @@ use hansen::{
     cantor, distance, line_segment, mix_solver, read_data, write_hash, write_results, Drug,
     FinalSolution, Solution, Solvent,
 };
+use nalgebra::base;
 use rayon::prelude::*;
 use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
@@ -11,13 +12,36 @@ use std::time::Instant;
 fn main() {
     let mut counts: HashMap<i32, i32> = HashMap::new();
     let args: Vec<String> = env::args().collect();
-    let max_results: usize = args[1].parse::<usize>().unwrap();
 
+    let max_results: usize = args[3].parse::<usize>().unwrap();
+    let base_sol_a: i32 = args[1].parse::<i32>().unwrap();
+    let base_sol_b: i32 = args[2].parse::<i32>().unwrap();
     let max_capacity: usize = 100000;
 
     let drugs: Vec<Drug> = read_data::<Drug>("data/drug_list.csv".to_string());
     let solves: Vec<Solvent> = read_data::<Solvent>("data/solvents.csv".to_string());
+
+
+    let base_solv_a: Solvent = solves
+                .clone()
+                .into_iter()
+                .find(|s| s.id == base_sol_a)
+                .unwrap();
+
+    let base_solv_b: Solvent = solves
+                .clone()
+                .into_iter()
+                .find(|s| s.id == base_sol_b)
+                .unwrap();
+
+    println!("Comparing Solvent Mixes against {} and {}", base_solv_a.solvent, base_solv_b.solvent);
     let par_iter = drugs.into_par_iter().map(|drug| {
+
+        let (base_start, base_end) = line_segment(&base_solv_a, &base_solv_b);
+        
+        let base_distance: f32 = distance(&drug, &base_start, &base_end);
+
+        println!("Comparisoon Solvent Mixes {} and {} distance to {} is {:}", base_solv_a.solvent, base_solv_b.solvent, drug.drug, base_distance);
         let solvs = solves.clone();
         let mut temp_capacity: usize = max_capacity.clone();
         let mut top_mixes: Vec<Solution> = Vec::new();
@@ -40,26 +64,32 @@ fn main() {
                         distance: c,
                     };
 
-                    if top_mixes.is_empty() || top_mixes.len() < temp_capacity {
+                    if c <= base_distance {
+
                         top_mixes.push(temp_solution);
-                        if top_mixes.len() == temp_capacity {
-                            top_mixes.sort_by(|a, b| {
-                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
-                            });
-                        }
-                    } else if top_mixes.last().unwrap().distance > c {
-                        top_mixes.push(temp_solution);
-
-                        top_mixes.par_sort_unstable_by(|a, b| {
-                            a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
-                        });
-
-                        if top_mixes.len() > temp_capacity {
-                            top_mixes.pop();
-                        }
-
-                        temp_capacity *= 2;
                     }
+
+
+//                    if top_mixes.is_empty() || top_mixes.len() < temp_capacity {
+                        //top_mixes.push(temp_solution);
+                        //if top_mixes.len() == temp_capacity {
+                            //top_mixes.sort_by(|a, b| {
+                                //a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                            //});
+                        //}
+                    //} else if top_mixes.last().unwrap().distance > c {
+                        //top_mixes.push(temp_solution);
+
+                        //top_mixes.par_sort_unstable_by(|a, b| {
+                            //a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                        //});
+
+                        //if top_mixes.len() > temp_capacity {
+                            //top_mixes.pop();
+                        //}
+
+                        //temp_capacity *= 2;
+                    //}
                 }
             }
         }
@@ -96,7 +126,6 @@ fn main() {
         final_results
     });
     let res: Vec<FinalSolution> = par_iter.flatten().collect();
-    //let res_mix:  Vec<(String, i32, String, f32, String, f32)> = par_iter.1.flatten().collect();
 
     write_results(res.clone(), "results.csv".to_string());
 
