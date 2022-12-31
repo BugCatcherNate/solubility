@@ -3,6 +3,9 @@ use std::time::Instant;
 use csv::Reader;
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
+use rayon::slice::ParallelSliceMut;
+
+use std::cmp::Ordering::Equal;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Clone, Serialize)]
@@ -158,11 +161,115 @@ pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
 }
 
 struct TopN {
-    max_capacity: usize,
     max_results: usize,
-    drugs: Vec<Drug>,
-    solves: Vec<Solvent>,
+    drugs_file: String,
+    solves_file: String,
 }
+impl TopN {
+    pub fn new(
+        max_results: usize,
+        drugs_file: String,
+        solves_file: String,
+    ) -> Self {
+        Self {
+            max_results,
+            drugs_file,
+            solves_file
+     
+        }
+    }
+
+    pub fn calculate(&self) -> Vec<FinalSolution> {
+            let drugs = read_data::<Drug>(self.drugs_file.to_string());
+            let solves = read_data::<Solvent>(self.solves_file.to_string());
+
+        let max_capacity = 100000;
+
+        let par_iter = drugs.clone().into_par_iter().map(|drug| {
+
+            let solvs = solves.clone();
+            let mut temp_capacity: usize = max_capacity.clone();
+            let mut top_mixes: Vec<Solution> = Vec::new();
+            println!("Starting Thread: {}", drug.drug);
+            let start = Instant::now();
+            for solvent_a in &solvs {
+                let solvent_a: &Solvent = &solvent_a;
+                for solvent_b in &solvs {
+                    if solvent_a.id < solvent_b.id {
+                        let solvent_b: &Solvent = &solvent_b;
+
+                        let (start, end) = line_segment(solvent_a, solvent_b);
+                        let temp_solvent_a = solvent_a.clone();
+                        let temp_solvent_b = solvent_b.clone();
+                        let c: f32 = distance(&drug, &start, &end);
+                        let temp_solution = Solution {
+                            mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
+                            solvent_a: temp_solvent_a.id,
+                            solvent_b: temp_solvent_b.id,
+                            distance: c,
+                        };
+
+
+                        if top_mixes.is_empty() || top_mixes.len() < temp_capacity {                          
+                            top_mixes.push(temp_solution);
+                            if top_mixes.len() == temp_capacity {
+                                top_mixes.sort_by(|a, b| {
+                                    a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                                });
+                            }
+                        } else if top_mixes.last().unwrap().distance > c {
+                            top_mixes.push(temp_solution);
+    
+                            top_mixes.par_sort_unstable_by(|a, b| {
+                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                            });
+    
+                            if top_mixes.len() > temp_capacity {
+                                top_mixes.pop();
+                            }
+    
+                            temp_capacity *= 2;
+                        }
+                
+                }
+            }
+            }
+
+let final_mixes = top_mixes.split_at(self.max_results).0.to_vec();
+        let mut final_results: Vec<FinalSolution> = Vec::new();
+        for mix in &final_mixes {
+            let solv_a: Solvent = solvs
+                .clone()
+                .into_iter()
+                .find(|s| s.id == mix.solvent_a)
+                .unwrap();
+
+            let solv_b: Solvent = solvs
+                .clone()
+                .into_iter()
+                .find(|s| s.id == mix.solvent_b)
+                .unwrap();
+
+            let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
+            let temp_res: FinalSolution = FinalSolution {
+                drug: drug.clone().drug,
+                mix_id: mix.mix_id,
+                solvent_a: solv_a.solvent,
+                solvent_b: solv_b.solvent,
+                hansen_distance: mix.distance,
+                solvent_a_ratio: x_a * 100.0,
+                solvent_b_ratio: x_b * 100.0,
+            };
+            final_results.push(temp_res);
+        }
+        let duration = start.elapsed();
+        println!("Finished Thread: {} in {:?} ", drug.drug, duration);
+        final_results
+    });
+    par_iter.flatten().collect()
+    }
+}
+
 
 pub struct BetterSolvent {
     base_sol_a_ind: i32,

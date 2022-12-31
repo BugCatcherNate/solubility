@@ -5,8 +5,17 @@ use std::env;
 fn main() {
     let mut counts: HashMap<i32, i32> = HashMap::new();
     let args: Vec<String> = env::args().collect();
-    let base_sol_a: i32 = args[1].parse::<i32>().unwrap();
-    let base_sol_b: i32 = args[2].parse::<i32>().unwrap();
+    let mode: char = args[1].parse::<char>().unwrap();
+    match mode {
+
+        'n' => {
+            let base_sol_a: i32 = args[2].parse::<i32>().unwrap();
+    let base_sol_b: i32 = args[3].parse::<i32>().unwrap();
+
+    let base_sol_b: i32 = args[4].parse::<i32>().unwrap();
+        }
+    }
+
     let max_results: usize = args[3].parse::<usize>().unwrap();
 
     let bs = BetterSolvent::new(
