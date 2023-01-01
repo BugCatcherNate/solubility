@@ -1,5 +1,5 @@
+use std::collections::HashMap;
 use std::time::Instant;
-
 use csv::Reader;
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
@@ -19,6 +19,7 @@ pub struct Solvent {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Drug {
+    pub id: i32,
     pub drug: String,
     pub d_d: f32,
     pub d_p: f32,
@@ -34,11 +35,10 @@ pub struct SolventMix {
     pub sol_params: Vector3<f32>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Copy)]
 pub struct Solution {
     pub mix_id: i32,
-    pub solvent_a: i32,
-    pub solvent_b: i32,
+    pub drug_id: i32,
     pub distance: f32,
 }
 
@@ -65,6 +65,13 @@ pub fn cantor(a: i32, b: i32) -> i32 {
     let sum: i32 = a + b;
     let triangle_sum: i32 = sum * (sum + 1) / 2;
     triangle_sum + b
+}
+
+pub fn inv_cantor(c: i32) -> (i32, i32) {
+    let n = ((-1.0 + ((8 * c + 1) as f64).sqrt()) / 2.0).floor() as i32;
+    let a = c - ((n + 1) * n)/2;
+    let b = n - a;
+    (a, b)
 }
 
 pub fn standard_dist(a_x: f32, a_y: f32, a_z: f32, b_x: f32, b_y: f32, b_z: f32) -> f32 {
@@ -164,13 +171,15 @@ pub struct TopN {
     n: usize,
     drugs_file: String,
     solves_file: String,
+    max_results: usize
 }
 impl TopN {
-    pub fn new(n: usize, drugs_file: String, solves_file: String) -> Self {
+    pub fn new(n: usize, drugs_file: String, solves_file: String, max_results: usize) -> Self {
         Self {
             n,
             drugs_file,
             solves_file,
+            max_results
         }
     }
 
@@ -198,8 +207,7 @@ impl TopN {
                         let c: f32 = distance(&drug, &start, &end);
                         let temp_solution = Solution {
                             mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
-                            solvent_a: temp_solvent_a.id,
-                            solvent_b: temp_solvent_b.id,
+                            drug_id: drug.id,
                             distance: c,
                         };
 
@@ -230,20 +238,53 @@ impl TopN {
             top_mixes
                 .par_sort_unstable_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
-            let final_mixes = top_mixes.split_at(self.n).0.to_vec();
+         let duration = start.elapsed();
+            println!("Finished Thread: {} in {:?} ", drug.drug, duration);
+          top_mixes.split_at(self.n).0.to_vec()
+       
+        });
+
+        let mut counts: HashMap<i32, i32> = HashMap::new();
+        let res: Vec<Solution> = par_iter.flatten().collect();
+
+            for r in &res {
+                let new_count = match counts.get(&r.mix_id) {
+                    Some(count) => count + 1,
+                    None => 1,
+                };
+                counts.insert(r.mix_id, new_count);
+            }
+
+    let mut count_vec: Vec<_> = counts.iter().collect();
+    count_vec.sort_by(|a, b| b.1.cmp(a.1));
+    let final_counts =  count_vec.split_at(self.max_results).0.to_vec();
+
             let mut final_results: Vec<FinalSolution> = Vec::new();
-            for mix in &final_mixes {
-                let solv_a: Solvent = solvs
+
+            for sol in final_counts {
+
+                let temp_mixes: Vec<Solution> = res.into_iter().filter(|s| s.mix_id == *sol.0).collect();
+
+            for mix in temp_mixes {
+                let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
+                let solv_a: Solvent = solves
                     .clone()
                     .into_iter()
-                    .find(|s| s.id == mix.solvent_a)
+                    .find(|s| s.id == solv_a_id)
                     .unwrap();
 
-                let solv_b: Solvent = solvs
+                let solv_b: Solvent = solves
                     .clone()
                     .into_iter()
-                    .find(|s| s.id == mix.solvent_b)
+                    .find(|s| s.id == solv_b_id)
                     .unwrap();
+
+                 let drug: Drug = drugs
+                    .clone()
+                    .into_iter()
+                    .find(|s| s.id == mix.drug_id)
+                    .unwrap();
+
 
                 let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
                 let temp_res: FinalSolution = FinalSolution {
@@ -257,11 +298,10 @@ impl TopN {
                 };
                 final_results.push(temp_res);
             }
-            let duration = start.elapsed();
-            println!("Finished Thread: {} in {:?} ", drug.drug, duration);
+
+        }
+            
             final_results
-        });
-        par_iter.flatten().collect()
     }
 }
 
@@ -328,8 +368,7 @@ impl BetterSolvent {
                         let c: f32 = distance(&drug, &start, &end);
                         let temp_solution = Solution {
                             mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
-                            solvent_a: temp_solvent_a.id,
-                            solvent_b: temp_solvent_b.id,
+                            drug_id: drug.id,
                             distance: c,
                         };
 
@@ -342,19 +381,22 @@ impl BetterSolvent {
             //top_mixes
             //    .par_sort_unstable_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
+
             let final_mixes = top_mixes;
             let mut final_results: Vec<FinalSolution> = Vec::new();
             for mix in &final_mixes {
+
+                let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
                 let solv_a: Solvent = solvs
                     .clone()
                     .into_iter()
-                    .find(|s| s.id == mix.solvent_a)
+                    .find(|s| s.id == solv_a_id)
                     .unwrap();
 
                 let solv_b: Solvent = solvs
                     .clone()
                     .into_iter()
-                    .find(|s| s.id == mix.solvent_b)
+                    .find(|s| s.id == solv_b_id)
                     .unwrap();
 
                 let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);

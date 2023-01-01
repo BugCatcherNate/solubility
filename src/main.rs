@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use std::env;
 
 fn main() {
-    let mut counts: HashMap<i32, i32> = HashMap::new();
     let args: Vec<String> = env::args().collect();
     let mode: char = args[1].parse::<char>().unwrap();
 
@@ -20,15 +19,7 @@ fn main() {
                 "data/solvents.csv".to_owned(),
             );
             let res = bs.calculate();
-            write_results(res.clone(), "results.csv".to_string());
-
-            for r in res {
-                let new_count = match counts.get(&r.mix_id) {
-                    Some(count) => count + 1,
-                    None => 1,
-                };
-                counts.insert(r.mix_id, new_count);
-            }
+        
         }
 
         'n' => {
