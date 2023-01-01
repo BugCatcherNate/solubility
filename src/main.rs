@@ -1,5 +1,4 @@
 use hansen::{write_hash, write_results, BetterSolvent, TopN};
-use nalgebra::max;
 use std::collections::HashMap;
 use std::env;
 
@@ -17,7 +16,6 @@ fn main() {
             let bs = BetterSolvent::new(
                 base_sol_a,
                 base_sol_b,
-                max_results,
                 "data/drug_list.csv".to_owned(),
                 "data/solvents.csv".to_owned(),
             );
@@ -38,7 +36,6 @@ fn main() {
 
             let tn: TopN = TopN::new(
                 n.to_owned(),
-                max_results.to_owned(),
                 "data/drug_list.csv".to_owned(),
                 "data/solvents.csv".to_owned(),
             );
@@ -61,5 +58,8 @@ fn main() {
 
     let mut count_vec: Vec<_> = counts.iter().collect();
     count_vec.sort_by(|a, b| b.1.cmp(a.1));
-    write_hash(count_vec.split_at(max_results).0.to_vec(), "res.csv".to_string());
+    write_hash(
+        count_vec.split_at(max_results).0.to_vec(),
+        "res.csv".to_string(),
+    );
 }
