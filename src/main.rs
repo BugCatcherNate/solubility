@@ -1,5 +1,4 @@
-use hansen::{write_hash, write_results, BetterSolvent, TopN};
-use std::collections::HashMap;
+use hansen::{write_results, BetterSolvent, TopN};
 use std::env;
 
 fn main() {
@@ -29,17 +28,11 @@ fn main() {
                 n.to_owned(),
                 "data/drug_list.csv".to_owned(),
                 "data/solvents.csv".to_owned(),
+                max_results
             );
             let res = tn.calculate();
             write_results(res.clone(), "results.csv".to_string());
 
-            for r in res {
-                let new_count = match counts.get(&r.mix_id) {
-                    Some(count) => count + 1,
-                    None => 1,
-                };
-                counts.insert(r.mix_id, new_count);
-            }
         }
 
         _ => {
@@ -47,10 +40,5 @@ fn main() {
         }
     }
 
-    let mut count_vec: Vec<_> = counts.iter().collect();
-    count_vec.sort_by(|a, b| b.1.cmp(a.1));
-    write_hash(
-        count_vec.split_at(max_results).0.to_vec(),
-        "res.csv".to_string(),
-    );
-}
+    
+    }
