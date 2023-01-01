@@ -257,17 +257,21 @@ impl TopN {
 
     let mut count_vec: Vec<_> = counts.iter().collect();
     count_vec.sort_by(|a, b| b.1.cmp(a.1));
-    let final_counts =  count_vec.split_at(self.max_results).0.to_vec();
+    let mut final_counts =  count_vec.split_at(self.max_results).0.to_vec();
 write_hash(
         final_counts.clone(),
         "res.csv".to_string(),
     );
 
             let mut final_results: Vec<FinalSolution> = Vec::new();
+        let mut final_mixes: Vec<i32> = Vec::new();
+        for x in final_counts {
+            final_mixes.push(*x.0);
+        }
 
-            for sol in final_counts {
+            let temp_mixes: Vec<Solution> = res.clone().into_iter().filter(|s| final_mixes.contains(&s.mix_id)).collect();
 
-                let temp_mixes: Vec<Solution> = res.clone().into_iter().filter(|s| s.mix_id == *sol.0).collect();
+
 
             for mix in temp_mixes {
                 let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
@@ -301,7 +305,6 @@ write_hash(
                     solvent_b_ratio: x_b * 100.0,
                 };
                 final_results.push(temp_res);
-            }
 
         }
             
