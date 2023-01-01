@@ -160,18 +160,21 @@ pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     drugs
 }
 
-struct TopN {
+pub struct TopN {
+    n: usize,
     max_results: usize,
     drugs_file: String,
     solves_file: String,
 }
 impl TopN {
     pub fn new(
+        n: usize,
         max_results: usize,
         drugs_file: String,
         solves_file: String,
     ) -> Self {
         Self {
+            n,
             max_results,
             drugs_file,
             solves_file
@@ -235,7 +238,11 @@ impl TopN {
             }
             }
 
-let final_mixes = top_mixes.split_at(self.max_results).0.to_vec();
+ top_mixes.par_sort_unstable_by(|a, b| {
+                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                            });
+
+let final_mixes = top_mixes.split_at(self.n).0.to_vec();
         let mut final_results: Vec<FinalSolution> = Vec::new();
         for mix in &final_mixes {
             let solv_a: Solvent = solvs
@@ -351,6 +358,9 @@ impl BetterSolvent {
                     }
                 }
             }
+ top_mixes.par_sort_unstable_by(|a, b| {
+                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                            });
 
 let final_mixes = top_mixes.split_at(self.max_results).0.to_vec();
         let mut final_results: Vec<FinalSolution> = Vec::new();
