@@ -211,32 +211,21 @@ impl TopN {
                             distance: c,
                         };
 
-                        if top_mixes.is_empty() || top_mixes.len() < temp_capacity {
-                            top_mixes.push(temp_solution);
-                            if top_mixes.len() == temp_capacity {
-                                top_mixes.sort_by(|a, b| {
-                                    a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
-                                });
-                            }
-                        } else if top_mixes.last().unwrap().distance > c {
-                            top_mixes.push(temp_solution);
+                        top_mixes.push(temp_solution);
 
-                            top_mixes.par_sort_unstable_by(|a, b| {
-                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
-                            });
+                        if top_mixes.len() > temp_capacity  {
 
-                            if top_mixes.len() > temp_capacity {
-                                top_mixes.pop();
-                            }
+                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+                            top_mixes = top_mixes.split_at(temp_capacity).0.to_vec();
 
                             temp_capacity *= 2;
                         }
+                        }
                     }
                 }
-            }
 
-            top_mixes
-                .par_sort_unstable_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+
 
          let duration = start.elapsed();
             println!("Finished Thread: {} in {:?} ", drug.drug, duration);
@@ -256,8 +245,9 @@ impl TopN {
             }
 
     let mut count_vec: Vec<_> = counts.iter().collect();
-    count_vec.sort_by(|a, b| b.1.cmp(a.1));
-    let mut final_counts =  count_vec.split_at(self.max_results).0.to_vec();
+
+    count_vec.sort_by(|a,b| b.1.cmp(a.1));
+    let final_counts =  count_vec.split_at(self.max_results).0.to_vec();
 write_hash(
         final_counts.clone(),
         "res.csv".to_string(),

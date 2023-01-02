@@ -22,7 +22,7 @@ fn main() {
         }
 
         'n' => {
-            let n: usize = args[2].parse::<usize>().unwrap();
+            let n: usize = args[3].parse::<usize>().unwrap();
 
             let tn: TopN = TopN::new(
                 n.to_owned(),
