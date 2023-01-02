@@ -17,7 +17,7 @@ fn main() {
                 "data/drug_list.csv".to_owned(),
                 "data/solvents.csv".to_owned(),
             );
-            let res = bs.calculate();
+            bs.calculate();
         
         }
 

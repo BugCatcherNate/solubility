@@ -62,9 +62,9 @@ pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
 }
 
 pub fn cantor(a: i32, b: i32) -> i32 {
-    let sum: i32 = a + b;
-    let triangle_sum: i32 = sum * (sum + 1) / 2;
-    triangle_sum + b
+    let sum: i32 = (a + b + 1)  * ( a + b);
+    let triangle_sum: i32 = sum / 2;
+    triangle_sum + a
 }
 
 pub fn inv_cantor(c: i32) -> (i32, i32) {
@@ -423,5 +423,20 @@ impl BetterSolvent {
             final_results
         });
         par_iter.flatten().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{cantor, inv_cantor};
+
+    #[test] 
+    fn test_cantor() {
+        let test_a = 12222;
+        let test_b = 7;
+        let c = cantor(test_a, test_b);
+        let (a, b) = inv_cantor(c);
+        assert_eq!(a, test_a);
+        assert_eq!(b, test_b);
     }
 }
