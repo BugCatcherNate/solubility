@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-use std::time::Instant;
 use csv::Reader;
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
-use rayon::slice::ParallelSliceMut;
+use std::collections::HashMap;
+use std::time::Instant;
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -62,14 +61,14 @@ pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
 }
 
 pub fn cantor(a: i32, b: i32) -> i32 {
-    let sum: i32 = (a + b + 1)  * ( a + b);
+    let sum: i32 = (a + b + 1) * (a + b);
     let triangle_sum: i32 = sum / 2;
     triangle_sum + a
 }
 
 pub fn inv_cantor(c: i32) -> (i32, i32) {
     let n = ((-1.0 + ((8 * c + 1) as f64).sqrt()) / 2.0).floor() as i32;
-    let a = c - ((n + 1) * n)/2;
+    let a = c - ((n + 1) * n) / 2;
     let b = n - a;
     (a, b)
 }
@@ -171,7 +170,7 @@ pub struct TopN {
     n: usize,
     drugs_file: String,
     solves_file: String,
-    max_results: usize
+    max_results: usize,
 }
 impl TopN {
     pub fn new(n: usize, drugs_file: String, solves_file: String, max_results: usize) -> Self {
@@ -179,7 +178,7 @@ impl TopN {
             n,
             drugs_file,
             solves_file,
-            max_results
+            max_results,
         }
     }
 
@@ -213,218 +212,97 @@ impl TopN {
 
                         top_mixes.push(temp_solution);
 
-                        if top_mixes.len() > temp_capacity  {
-
-                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+                        if top_mixes.len() > temp_capacity {
+                            top_mixes.sort_by(|a, b| {
+                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
+                            });
                             top_mixes = top_mixes.split_at(temp_capacity).0.to_vec();
 
                             temp_capacity *= 2;
                         }
-                        }
                     }
                 }
+            }
 
-                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+            top_mixes.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
-
-         let duration = start.elapsed();
+            let duration = start.elapsed();
             println!("Finished Thread: {} in {:?} ", drug.drug, duration);
-          top_mixes.split_at(self.n).0.to_vec()
-       
+            top_mixes.split_at(self.n).0.to_vec()
         });
 
         let mut counts: HashMap<i32, i32> = HashMap::new();
         let res: Vec<Solution> = par_iter.flatten().collect();
 
-            for r in &res {
-                let new_count = match counts.get(&r.mix_id) {
-                    Some(count) => count + 1,
-                    None => 1,
-                };
-                counts.insert(r.mix_id, new_count);
-            }
+        for r in &res {
+            let new_count = match counts.get(&r.mix_id) {
+                Some(count) => count + 1,
+                None => 1,
+            };
+            counts.insert(r.mix_id, new_count);
+        }
 
-    let mut count_vec: Vec<_> = counts.iter().collect();
+        let mut count_vec: Vec<_> = counts.iter().collect();
 
-    count_vec.sort_by(|a,b| b.1.cmp(a.1));
-    let final_counts =  count_vec.split_at(self.max_results).0.to_vec();
-write_hash(
-        final_counts.clone(),
-        "res.csv".to_string(),
-    );
+        count_vec.sort_by(|a, b| b.1.cmp(a.1));
+        let final_counts = count_vec.split_at(self.max_results).0.to_vec();
+        write_hash(final_counts.clone(), "mix_counts.csv".to_string());
 
-            let mut final_results: Vec<FinalSolution> = Vec::new();
+        let mut final_results: Vec<FinalSolution> = Vec::new();
         let mut final_mixes: Vec<i32> = Vec::new();
         for x in final_counts {
             final_mixes.push(*x.0);
         }
 
-            let temp_mixes: Vec<Solution> = res.clone().into_iter().filter(|s| final_mixes.contains(&s.mix_id)).collect();
-
-
-
-            for mix in temp_mixes {
-                let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
-                let solv_a: Solvent = solves
-                    .clone()
-                    .into_iter()
-                    .find(|s| s.id == solv_a_id)
-                    .unwrap();
-
-                let solv_b: Solvent = solves
-                    .clone()
-                    .into_iter()
-                    .find(|s| s.id == solv_b_id)
-                    .unwrap();
-
-                 let drug: Drug = drugs
-                    .clone()
-                    .into_iter()
-                    .find(|s| s.id == mix.drug_id)
-                    .unwrap();
-
-
-                let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
-                let temp_res: FinalSolution = FinalSolution {
-                    drug: drug.clone().drug,
-                    mix_id: mix.mix_id,
-                    solvent_a: solv_a.solvent,
-                    solvent_b: solv_b.solvent,
-                    hansen_distance: mix.distance,
-                    solvent_a_ratio: x_a * 100.0,
-                    solvent_b_ratio: x_b * 100.0,
-                };
-                final_results.push(temp_res);
-
-        }
-            
-            final_results
-    }
-}
-
-pub struct BetterSolvent {
-    n: usize,
-    base_sol_a_ind: i32,
-    base_sol_b_ind: i32,
-    drugs_file: String,
-    solves_file: String,
-}
-
-impl BetterSolvent {
-    pub fn new(
-        n: usize,
-        base_sol_a_ind: i32,
-        base_sol_b_ind: i32,
-        drugs_file: String,
-        solves_file: String,
-    ) -> Self {
-        Self {
-            n,
-            base_sol_a_ind,
-            base_sol_b_ind,
-            drugs_file,
-            solves_file,
-        }
-    }
-
-    pub fn calculate(&self) -> Vec<FinalSolution> {
-        let drugs = read_data::<Drug>(self.drugs_file.to_string());
-        let solves = read_data::<Solvent>(self.solves_file.to_string());
-
-        let base_solv_a: Solvent = solves
+        let temp_mixes: Vec<Solution> = res
             .clone()
             .into_iter()
-            .find(|s| s.id == self.base_sol_a_ind)
-            .unwrap();
+            .filter(|s| final_mixes.contains(&s.mix_id))
+            .collect();
 
-        let base_solv_b: Solvent = solves
-            .clone()
-            .into_iter()
-            .find(|s| s.id == self.base_sol_b_ind)
-            .unwrap();
+        for mix in temp_mixes {
+            let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
+            let solv_a: Solvent = solves
+                .clone()
+                .into_iter()
+                .find(|s| s.id == solv_a_id)
+                .unwrap();
 
-        let par_iter = drugs.clone().into_par_iter().map(|drug| {
-            let (base_start, base_end) = line_segment(&base_solv_a, &base_solv_b);
+            let solv_b: Solvent = solves
+                .clone()
+                .into_iter()
+                .find(|s| s.id == solv_b_id)
+                .unwrap();
 
-            let base_distance: f32 = distance(&drug, &base_start, &base_end);
+            let drug: Drug = drugs
+                .clone()
+                .into_iter()
+                .find(|s| s.id == mix.drug_id)
+                .unwrap();
 
-            println!(
-                "Comparisoon Solvent Mixes {} and {} distance to {} is {:}",
-                base_solv_a.solvent, base_solv_b.solvent, drug.drug, base_distance
-            );
-            let solvs = solves.clone();
-            let mut top_mixes: Vec<Solution> = Vec::new();
-            println!("Starting Thread: {}", drug.drug);
-            let start = Instant::now();
-            for solvent_a in &solvs {
-                let solvent_a: &Solvent = &solvent_a;
-                for solvent_b in &solvs {
-                    if solvent_a.id < solvent_b.id {
-                        let solvent_b: &Solvent = &solvent_b;
+            let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
+            let temp_res: FinalSolution = FinalSolution {
+                drug: drug.clone().drug,
+                mix_id: mix.mix_id,
+                solvent_a: solv_a.solvent,
+                solvent_b: solv_b.solvent,
+                hansen_distance: mix.distance,
+                solvent_a_ratio: x_a * 100.0,
+                solvent_b_ratio: x_b * 100.0,
+            };
+            final_results.push(temp_res);
+        }
 
-                        let (start, end) = line_segment(solvent_a, solvent_b);
-                        let temp_solvent_a = solvent_a.clone();
-                        let temp_solvent_b = solvent_b.clone();
-                        let c: f32 = distance(&drug, &start, &end);
-                        let temp_solution = Solution {
-                            mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
-                            drug_id: drug.id,
-                            distance: c,
-                        };
-
-                        if c <= base_distance {
-                            top_mixes.push(temp_solution);
-                        }
-                    }
-                }
-            }
-
-            
-
-                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
-
-            let final_mixes = top_mixes.split_at(self.n).0.to_vec();
-            let mut final_results: Vec<FinalSolution> = Vec::new();
-            for mix in &final_mixes {
-
-                let (solv_a_id, solv_b_id) = inv_cantor(mix.mix_id);
-                let solv_a: Solvent = solvs
-                    .clone()
-                    .into_iter()
-                    .find(|s| s.id == solv_a_id)
-                    .unwrap();
-
-                let solv_b: Solvent = solvs
-                    .clone()
-                    .into_iter()
-                    .find(|s| s.id == solv_b_id)
-                    .unwrap();
-
-                let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
-                let temp_res: FinalSolution = FinalSolution {
-                    drug: drug.clone().drug,
-                    mix_id: mix.mix_id,
-                    solvent_a: solv_a.solvent,
-                    solvent_b: solv_b.solvent,
-                    hansen_distance: mix.distance,
-                    solvent_a_ratio: x_a * 100.0,
-                    solvent_b_ratio: x_b * 100.0,
-                };
-                final_results.push(temp_res);
-            }
-            let duration = start.elapsed();
-            println!("Finished Thread: {} in {:?} ", drug.drug, duration);
-            final_results
-        });
-        par_iter.flatten().collect()
+        final_results
     }
 }
+
 
 #[cfg(test)]
 mod tests {
-    use crate::{cantor, inv_cantor};
+    use crate::{cantor, inv_cantor, standard_dist};
 
-    #[test] 
+    #[test]
     fn test_cantor() {
         let test_a = 12222;
         let test_b = 7;
@@ -432,5 +310,14 @@ mod tests {
         let (a, b) = inv_cantor(c);
         assert_eq!(a, test_a);
         assert_eq!(b, test_b);
+    }
+
+
+    #[test]
+    fn test_standard_dist() {
+        let point_a = (1.0, 1.0, 1.0);
+        let point_b= (2.0, 2.0,2.0);
+        let dist = standard_dist(point_a.0, point_a.1, point_a.2, point_b.0, point_b.1, point_b.2);
+        assert_eq!(1.0, dist);
     }
 }
