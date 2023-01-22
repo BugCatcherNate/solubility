@@ -303,6 +303,7 @@ write_hash(
 }
 
 pub struct BetterSolvent {
+    n: usize,
     base_sol_a_ind: i32,
     base_sol_b_ind: i32,
     drugs_file: String,
@@ -311,12 +312,14 @@ pub struct BetterSolvent {
 
 impl BetterSolvent {
     pub fn new(
+        n: usize,
         base_sol_a_ind: i32,
         base_sol_b_ind: i32,
         drugs_file: String,
         solves_file: String,
     ) -> Self {
         Self {
+            n,
             base_sol_a_ind,
             base_sol_b_ind,
             drugs_file,
@@ -375,11 +378,12 @@ impl BetterSolvent {
                     }
                 }
             }
-            //top_mixes
-            //    .par_sort_unstable_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
+            
 
-            let final_mixes = top_mixes;
+                            top_mixes.sort_by(|a,b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+
+            let final_mixes = top_mixes.split_at(self.n).0.to_vec();
             let mut final_results: Vec<FinalSolution> = Vec::new();
             for mix in &final_mixes {
 

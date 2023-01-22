@@ -12,13 +12,15 @@ fn main() {
             let base_sol_b: i32 = args[4].parse::<i32>().unwrap();
 
             let bs = BetterSolvent::new(
+                max_results,
                 base_sol_a,
                 base_sol_b,
                 "data/drug_list.csv".to_owned(),
                 "data/solvents.csv".to_owned(),
             );
-            bs.calculate();
+            let res = bs.calculate();
         
+            write_results(res.clone(), "results.csv".to_string());
         }
 
         'n' => {
