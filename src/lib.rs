@@ -300,7 +300,9 @@ impl TopN {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cantor, inv_cantor, standard_dist};
+    use nalgebra::Vector3;
+
+    use crate::{cantor, inv_cantor, standard_dist, Drug, distance};
 
     #[test]
     fn test_cantor() {
@@ -320,4 +322,15 @@ mod tests {
         let dist = standard_dist(point_a.0, point_a.1, point_a.2, point_b.0, point_b.1, point_b.2);
         assert_eq!(1.0, dist);
     }
+
+    #[test]
+    fn test_dist(){
+    let start = Vector3::new(2.0, 2.0, 0.0);
+    let end = Vector3::new(3.0, 3.0, 0.0);
+    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 0.0, d_p: 2.0, d_h: 0.0  };
+    let d = distance(&test_drug, &start, &end);
+    assert_eq!(1.0, d);
+
+    }
+
 }
