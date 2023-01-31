@@ -52,12 +52,29 @@ pub struct FinalSolution {
     pub hansen_distance: f32,
 }
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
+    let res: f32;
     let drug_params: Vector3<f32> = Vector3::new(drug.d_d, drug.d_p, drug.d_h);
-    let num: f32 = Vector3::norm(&(end - start).cross(&(start - drug_params)));
-    let dom: f32 = Vector3::norm(&(end - start));
+    let a_b = end - start;
+    let b_e = drug_params - end;
+    let a_e = drug_params - start;
+    let ab_be = a_b.dot(&b_e);
+    let ab_ae = a_b.dot(&a_e);
 
-    let res = num / dom;
+    if ab_be > 0.0 {
+
+        res = standard_dist(end.x, end.y, end.z, drug_params.x, drug_params.y, drug_params.z);
+    }else if ab_ae < 0.0 {
+
+        res = standard_dist(start.x, start.y, start.z, drug_params.x, drug_params.y, drug_params.z);
+    } else{
+        let num: f32 = Vector3::norm(&(end - start).cross(&(start - drug_params)));
+        let dom: f32 = Vector3::norm(&(end - start));
+    
+        res = num / dom;
+    };
+
     res
+
 }
 
 pub fn cantor(a: i32, b: i32) -> i32 {
@@ -300,6 +317,7 @@ impl TopN {
 
 #[cfg(test)]
 mod tests {
+    use float_cmp::approx_eq;
     use nalgebra::Vector3;
 
     use crate::{cantor, inv_cantor, standard_dist, Drug, distance};
@@ -320,16 +338,27 @@ mod tests {
         let point_a = (1.0, 1.0, 1.0);
         let point_b= (2.0, 2.0,2.0);
         let dist = standard_dist(point_a.0, point_a.1, point_a.2, point_b.0, point_b.1, point_b.2);
-        assert_eq!(1.0, dist);
+        assert!(approx_eq!(f32, 1.732, dist, epsilon = 0.001));
     }
 
     #[test]
-    fn test_dist(){
-    let start = Vector3::new(2.0, 2.0, 0.0);
-    let end = Vector3::new(3.0, 3.0, 0.0);
-    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 0.0, d_p: 2.0, d_h: 0.0  };
+    fn test_dist_a(){
+    let start = Vector3::new(2.0, 2.0, 2.0);
+    let end = Vector3::new(3.0, 3.0, 3.0);
+    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 1.0, d_p: 1.0, d_h: 1.0};
     let d = distance(&test_drug, &start, &end);
-    assert_eq!(1.0, d);
+
+    assert!(approx_eq!(f32, 1.73205, d, epsilon = 0.001));
+
+    }
+    #[test]
+    fn test_dist_b(){
+    let start = Vector3::new(2.0, 2.0, 2.0);
+    let end = Vector3::new(3.0, 3.0, 3.0);
+    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 5.0, d_p: 5.0, d_h: 5.0};
+    let d = distance(&test_drug, &start, &end);
+
+    assert!(approx_eq!(f32, 3.464102, d, epsilon = 0.001));
 
     }
 
