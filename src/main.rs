@@ -1,6 +1,9 @@
 use hansen::{write_results, TopN};
 use std::env;
 
+//TODO add user help function
+//TODO fancier input with tags
+//TODO error handling
 fn main() {
     let args: Vec<String> = env::args().collect();
 

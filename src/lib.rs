@@ -94,6 +94,7 @@ pub fn standard_dist(a_x: f32, a_y: f32, a_z: f32, b_x: f32, b_y: f32, b_z: f32)
     ((b_x - a_x).powi(2) + (b_y - a_y).powi(2) + (b_z - a_z).powi(2)).sqrt()
 }
 
+//TODO add tests
 pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32) {
     let mut r_a: f32 = 0.9;
     let mut r_b: f32 = 1.0 - r_a;
@@ -122,6 +123,7 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
     (best_r_a, best_r_b)
 }
 
+//TODO add tests
 pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
     let r_b: f32 = 1.0 - r_a;
     let mix_d_d: f32 = r_a * a.d_d + r_b * b.d_d;
@@ -137,6 +139,7 @@ pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
     new_blend
 }
 
+//TODO add tests
 pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
     let start: SolventMix = mixture(a, b, 0.9);
     let end: SolventMix = mixture(a, b, 0.1);
@@ -144,6 +147,7 @@ pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
     (start.sol_params, end.sol_params)
 }
 
+//TODO combine
 pub fn write_data(solution: Vec<Solution>, path: String) {
     let mut wrt = csv::Writer::from_path(path).unwrap();
 
@@ -153,7 +157,7 @@ pub fn write_data(solution: Vec<Solution>, path: String) {
 
     wrt.flush().unwrap();
 }
-
+//TODO combine
 pub fn write_hash(solution: Vec<(&i32, &i32)>, path: String) {
     let mut wrt = csv::Writer::from_path(path).unwrap();
 
@@ -163,7 +167,7 @@ pub fn write_hash(solution: Vec<(&i32, &i32)>, path: String) {
 
     wrt.flush().unwrap();
 }
-
+//TODO combine
 pub fn write_results(solution: Vec<FinalSolution>, path: String) {
     let mut wrt = csv::Writer::from_path(path).unwrap();
 
@@ -189,6 +193,8 @@ pub struct TopN {
     solves_file: String,
     max_results: usize,
 }
+
+//TODO write tests
 impl TopN {
     pub fn new(n: usize, drugs_file: String, solves_file: String, max_results: usize) -> Self {
         Self {
