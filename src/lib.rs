@@ -362,4 +362,18 @@ mod tests {
 
     }
 
+    #[test]
+    fn test_dist_c(){
+    let start = Vector3::new(5.0, 2.0, 1.0);
+    let end = Vector3::new(3.0, 1.0, -1.0);
+    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 0.0, d_p: 2.0, d_h: 3.0};
+    let d = distance(&test_drug, &start, &end);
+    println!("{}", d);
+
+    assert!(approx_eq!(f32, 5.0, d, epsilon = 0.001));
+
+    }
+
+
+
 }
