@@ -52,6 +52,12 @@ pub struct FinalSolution {
     pub hansen_distance: f32,
 }
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
+    // this function returns a f32 value representing the shortest distance between the Drug and the line segment defined by the start and end points.
+    // this function takes in three arguments:
+    // reference to a Drug struct
+    // reference to a Vector3<f32> representing the start point
+    // reference to another Vector3<f32> representing the end point.
+
     let res: f32;
     let drug_params: Vector3<f32> = Vector3::new(drug.d_d, drug.d_p, drug.d_h);
     let a_b = end - start;
@@ -61,29 +67,48 @@ pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
     let ab_ae = a_b.dot(&a_e);
 
     if ab_be > 0.0 {
-
-        res = standard_dist(end.x, end.y, end.z, drug_params.x, drug_params.y, drug_params.z);
-    }else if ab_ae < 0.0 {
-
-        res = standard_dist(start.x, start.y, start.z, drug_params.x, drug_params.y, drug_params.z);
-    } else{
+        // end point is closer to the Drug than the start point
+        res = standard_dist(
+            end.x,
+            end.y,
+            end.z,
+            drug_params.x,
+            drug_params.y,
+            drug_params.z,
+        );
+    } else if ab_ae < 0.0 {
+        // start point is closer to the Drug than the end point
+        res = standard_dist(
+            start.x,
+            start.y,
+            start.z,
+            drug_params.x,
+            drug_params.y,
+            drug_params.z,
+        );
+    } else {
+        // calculate perpendicular distance
         let num: f32 = Vector3::norm(&(end - start).cross(&(start - drug_params)));
         let dom: f32 = Vector3::norm(&(end - start));
-    
+
         res = num / dom;
     };
 
     res
-
 }
 
 pub fn cantor(a: i32, b: i32) -> i32 {
+    // this function returns the cantor pairing of integers a and b
+    // cantor pairing is used to generate a unique identifier for a combination of two integers
+
     let sum: i32 = (a + b + 1) * (a + b);
     let triangle_sum: i32 = sum / 2;
     triangle_sum + a
 }
 
 pub fn inv_cantor(c: i32) -> (i32, i32) {
+    // this function reversed the cantor paring
+    // result is the original integers used to create the unique identifier
     let n = ((-1.0 + ((8 * c + 1) as f64).sqrt()) / 2.0).floor() as i32;
     let a = c - ((n + 1) * n) / 2;
     let b = n - a;
@@ -91,20 +116,25 @@ pub fn inv_cantor(c: i32) -> (i32, i32) {
 }
 
 pub fn standard_dist(a_x: f32, a_y: f32, a_z: f32, b_x: f32, b_y: f32, b_z: f32) -> f32 {
+    // standard Euclidean distance of 2 3d points 
     ((b_x - a_x).powi(2) + (b_y - a_y).powi(2) + (b_z - a_z).powi(2)).sqrt()
 }
 
 //TODO add tests
 pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32) {
-    let mut r_a: f32 = 0.9;
-    let mut r_b: f32 = 1.0 - r_a;
+    let b_d: f32 = b.d_d;
+    let b_p: f32 = b.d_p;
+    let b_h: f32 = b.d_h;
     let mut last_diff = 1000000000.0;
     let mut best_r_a: f32 = 0.0;
     let mut best_r_b: f32 = 0.0;
-    while r_a >= 0.1 {
-        let a_x: f32 = r_a * a.d_d + r_b * b.d_d;
-        let a_y: f32 = r_a * a.d_p + r_b * b.d_p;
-        let a_z: f32 = r_a * a.d_h + r_b * b.d_h;
+
+    for r_a in (10..=90).step_by(1) {
+        let r_a: f32 = r_a as f32 / 100.0;
+        let r_b: f32 = 1.0 - r_a;
+        let a_x: f32 = r_a * a.d_d + r_b * b_d;
+        let a_y: f32 = r_a * a.d_p + r_b * b_p;
+        let a_z: f32 = r_a * a.d_h + r_b * b_h;
         let temp_dist = standard_dist(a_x, a_y, a_z, drug.d_d, drug.d_p, drug.d_h);
         let dist_diff = (temp_dist - dist).abs();
         if dist_diff <= last_diff {
@@ -112,16 +142,12 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
             best_r_a = r_a;
             best_r_b = r_b;
         }
-        r_a -= 0.01;
-        r_b = 1.0 - r_a;
     }
 
-    assert!(best_r_a != 0.0);
-
-    assert!(best_r_b != 0.0);
 
     (best_r_a, best_r_b)
 }
+
 
 //TODO add tests
 pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
@@ -214,21 +240,17 @@ impl TopN {
         let par_iter = drugs.clone().into_par_iter().map(|drug| {
             let solvs = solves.clone();
             let mut temp_capacity: usize = max_capacity.clone();
-            let mut top_mixes: Vec<Solution> = Vec::new();
+            let solvs_len = solvs.len();
+            let mut top_mixes: Vec<Solution> = Vec::with_capacity(solvs_len * (solvs_len - 1) / 2); 
             println!("Starting Thread: {}", drug.drug);
             let start = Instant::now();
-            for solvent_a in &solvs {
-                let solvent_a: &Solvent = &solvent_a;
-                for solvent_b in &solvs {
-                    if solvent_a.id < solvent_b.id {
-                        let solvent_b: &Solvent = &solvent_b;
+            for (i, solvent_a) in solvs.iter().enumerate() {
+                for solvent_b in solvs.iter().skip(i + 1) {
 
                         let (start, end) = line_segment(solvent_a, solvent_b);
-                        let temp_solvent_a = solvent_a.clone();
-                        let temp_solvent_b = solvent_b.clone();
                         let c: f32 = distance(&drug, &start, &end);
                         let temp_solution = Solution {
-                            mix_id: cantor(temp_solvent_a.id, temp_solvent_b.id),
+                            mix_id: cantor(solvent_a.id, solvent_b.id),
                             drug_id: drug.id,
                             distance: c,
                         };
@@ -245,7 +267,6 @@ impl TopN {
                         }
                     }
                 }
-            }
 
             top_mixes.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
@@ -303,7 +324,7 @@ impl TopN {
                 .find(|s| s.id == mix.drug_id)
                 .unwrap();
 
-            let (x_a, x_b): (f32, f32) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
+            let (x_a, x_b) = mix_solver(&solv_a, &solv_b, &drug, mix.distance);
             let temp_res: FinalSolution = FinalSolution {
                 drug: drug.clone().drug,
                 mix_id: mix.mix_id,
@@ -320,13 +341,12 @@ impl TopN {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use float_cmp::approx_eq;
     use nalgebra::Vector3;
 
-    use crate::{cantor, inv_cantor, standard_dist, Drug, distance};
+    use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
 
     #[test]
     fn test_cantor() {
@@ -338,48 +358,61 @@ mod tests {
         assert_eq!(b, test_b);
     }
 
-
     #[test]
     fn test_standard_dist() {
         let point_a = (1.0, 1.0, 1.0);
-        let point_b= (2.0, 2.0,2.0);
-        let dist = standard_dist(point_a.0, point_a.1, point_a.2, point_b.0, point_b.1, point_b.2);
+        let point_b = (2.0, 2.0, 2.0);
+        let dist = standard_dist(
+            point_a.0, point_a.1, point_a.2, point_b.0, point_b.1, point_b.2,
+        );
         assert!(approx_eq!(f32, 1.732, dist, epsilon = 0.001));
     }
 
     #[test]
-    fn test_dist_a(){
-    let start = Vector3::new(2.0, 2.0, 2.0);
-    let end = Vector3::new(3.0, 3.0, 3.0);
-    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 1.0, d_p: 1.0, d_h: 1.0};
-    let d = distance(&test_drug, &start, &end);
+    fn test_dist_a() {
+        let start = Vector3::new(2.0, 2.0, 2.0);
+        let end = Vector3::new(3.0, 3.0, 3.0);
+        let test_drug = Drug {
+            id: 1,
+            drug: "test_drug".to_string(),
+            d_d: 1.0,
+            d_p: 1.0,
+            d_h: 1.0,
+        };
+        let d = distance(&test_drug, &start, &end);
 
-    assert!(approx_eq!(f32, 1.73205, d, epsilon = 0.001));
-
+        assert!(approx_eq!(f32, 1.73205, d, epsilon = 0.001));
     }
     #[test]
-    fn test_dist_b(){
-    let start = Vector3::new(2.0, 2.0, 2.0);
-    let end = Vector3::new(3.0, 3.0, 3.0);
-    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 5.0, d_p: 5.0, d_h: 5.0};
-    let d = distance(&test_drug, &start, &end);
+    fn test_dist_b() {
+        let start = Vector3::new(2.0, 2.0, 2.0);
+        let end = Vector3::new(3.0, 3.0, 3.0);
+        let test_drug = Drug {
+            id: 1,
+            drug: "test_drug".to_string(),
+            d_d: 5.0,
+            d_p: 5.0,
+            d_h: 5.0,
+        };
+        let d = distance(&test_drug, &start, &end);
 
-    assert!(approx_eq!(f32, 3.464102, d, epsilon = 0.001));
-
+        assert!(approx_eq!(f32, 3.464102, d, epsilon = 0.001));
     }
 
     #[test]
-    fn test_dist_c(){
-    let start = Vector3::new(5.0, 2.0, 1.0);
-    let end = Vector3::new(3.0, 1.0, -1.0);
-    let test_drug = Drug {id: 1, drug:"test_drug".to_string(), d_d: 0.0, d_p: 2.0, d_h: 3.0};
-    let d = distance(&test_drug, &start, &end);
-    println!("{}", d);
+    fn test_dist_c() {
+        let start = Vector3::new(5.0, 2.0, 1.0);
+        let end = Vector3::new(3.0, 1.0, -1.0);
+        let test_drug = Drug {
+            id: 1,
+            drug: "test_drug".to_string(),
+            d_d: 0.0,
+            d_p: 2.0,
+            d_h: 3.0,
+        };
+        let d = distance(&test_drug, &start, &end);
+        println!("{}", d);
 
-    assert!(approx_eq!(f32, 5.0, d, epsilon = 0.001));
-
+        assert!(approx_eq!(f32, 5.0, d, epsilon = 0.001));
     }
-
-
-
 }
