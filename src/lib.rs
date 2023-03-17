@@ -173,36 +173,16 @@ pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
     (start.sol_params, end.sol_params)
 }
 
-//TODO combine
-pub fn write_data(solution: Vec<Solution>, path: String) {
+pub fn write_csv<T: serde::Serialize>(data: Vec<T>, path: String) {
     let mut wrt = csv::Writer::from_path(path).unwrap();
 
-    for sol in solution {
-        wrt.serialize(sol).unwrap();
+    for item in data {
+        wrt.serialize(item).unwrap();
     }
 
     wrt.flush().unwrap();
 }
-//TODO combine
-pub fn write_hash(solution: Vec<(&i32, &i32)>, path: String) {
-    let mut wrt = csv::Writer::from_path(path).unwrap();
 
-    for sol in solution {
-        wrt.serialize(sol).unwrap();
-    }
-
-    wrt.flush().unwrap();
-}
-//TODO combine
-pub fn write_results(solution: Vec<FinalSolution>, path: String) {
-    let mut wrt = csv::Writer::from_path(path).unwrap();
-
-    for sol in solution {
-        wrt.serialize(sol).unwrap();
-    }
-
-    wrt.flush().unwrap();
-}
 pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();
@@ -290,7 +270,7 @@ impl TopN {
 
         count_vec.sort_by(|a, b| b.1.cmp(a.1));
         let final_counts = count_vec.split_at(self.max_results).0.to_vec();
-        write_hash(final_counts.clone(), "mix_counts.csv".to_string());
+        write_csv(final_counts.clone(), "mix_counts.csv".to_string());
 
         let mut final_results: Vec<FinalSolution> = Vec::new();
         let mut final_mixes: Vec<i32> = Vec::new();

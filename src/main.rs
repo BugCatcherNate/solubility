@@ -1,4 +1,4 @@
-use hansen::{write_results, TopN};
+use hansen::{write_csv, TopN};
 use std::env;
 
 //TODO add user help function
@@ -18,7 +18,7 @@ fn main() {
                 max_results
             );
             let res = tn.calculate();
-            write_results(res.clone(), "mix_ratios.csv".to_string());
+            write_csv(res.clone(), "mix_ratios.csv".to_string());
 
 
     }
