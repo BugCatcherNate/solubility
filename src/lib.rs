@@ -148,21 +148,20 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
     (best_r_a, best_r_b)
 }
 
-
-//TODO add tests
 pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
-    let r_b: f32 = 1.0 - r_a;
-    let mix_d_d: f32 = r_a * a.d_d + r_b * b.d_d;
-    let mix_d_p: f32 = r_a * a.d_p + r_b * b.d_p;
-    let mix_d_h: f32 = r_a * a.d_h + r_b * b.d_h;
-    let new_blend = SolventMix {
+    let r_b = 1.0 - r_a;
+    let sol_params = Vector3::new(
+        r_a * a.d_d + r_b * b.d_d,
+        r_a * a.d_p + r_b * b.d_p,
+        r_a * a.d_h + r_b * b.d_h,
+    );
+    SolventMix {
         solvent_a: a.solvent.clone(),
         solvent_b: b.solvent.clone(),
         ratio_a: r_a,
         ratio_b: r_b,
-        sol_params: Vector3::new(mix_d_d, mix_d_p, mix_d_h),
-    };
-    new_blend
+        sol_params,
+    }
 }
 
 //TODO add tests
@@ -326,7 +325,8 @@ mod tests {
     use float_cmp::approx_eq;
     use nalgebra::Vector3;
 
-    use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
+   // use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
+    use super::*;
 
     #[test]
     fn test_cantor() {
@@ -394,5 +394,40 @@ mod tests {
         println!("{}", d);
 
         assert!(approx_eq!(f32, 5.0, d, epsilon = 0.001));
+    }
+
+
+    #[test]
+    fn test_mixture() {
+        let a = Solvent {
+            id: 1,
+            solvent: "A".to_string(),
+            d_d: 1.0,
+            d_p: 2.0,
+            d_h: 3.0,
+        };
+        let b = Solvent {
+            id: 2,
+            solvent: "B".to_string(),
+            d_d: 4.0,
+            d_p: 5.0,
+            d_h: 6.0,
+        };
+        let r_a = 0.6;
+        let expected = SolventMix {
+            solvent_a: "A".to_string(),
+            solvent_b: "B".to_string(),
+            ratio_a: 0.6,
+            ratio_b: 0.4,
+            sol_params: Vector3::new(2.2, 3.2, 4.2),
+        };
+        let result = mixture(&a, &b, r_a);
+        assert_eq!(result.solvent_a, expected.solvent_a);
+        assert_eq!(result.solvent_b, expected.solvent_b);
+        assert!(approx_eq!(f32, result.ratio_a, expected.ratio_a, epsilon = 0.001));
+        assert!(approx_eq!(f32, result.ratio_b, expected.ratio_b, epsilon = 0.001));
+        assert!(approx_eq!(f32, result.sol_params.x, expected.sol_params.x, epsilon = 0.001));
+        assert!(approx_eq!(f32, result.sol_params.y, expected.sol_params.y, epsilon = 0.001));
+        assert!(approx_eq!(f32, result.sol_params.z, expected.sol_params.z, epsilon = 0.001));
     }
 }
