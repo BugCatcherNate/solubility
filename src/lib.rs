@@ -116,36 +116,36 @@ pub fn inv_cantor(c: i32) -> (i32, i32) {
 }
 
 pub fn standard_dist(a_x: f32, a_y: f32, a_z: f32, b_x: f32, b_y: f32, b_z: f32) -> f32 {
-    // standard Euclidean distance of 2 3d points 
+    // standard Euclidean distance of 2 3d points
     ((b_x - a_x).powi(2) + (b_y - a_y).powi(2) + (b_z - a_z).powi(2)).sqrt()
 }
 
-//TODO add tests
 pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32) {
-    let b_d: f32 = b.d_d;
-    let b_p: f32 = b.d_p;
-    let b_h: f32 = b.d_h;
-    let mut last_diff = 1000000000.0;
-    let mut best_r_a: f32 = 0.0;
-    let mut best_r_b: f32 = 0.0;
+    let b_params = Vector3::new(b.d_d, b.d_p, b.d_h);
+    let mut last_diff = f32::INFINITY;
+    let mut best_r_a = 0.0;
 
-    for r_a in (10..=90).step_by(1) {
-        let r_a: f32 = r_a as f32 / 100.0;
-        let r_b: f32 = 1.0 - r_a;
-        let a_x: f32 = r_a * a.d_d + r_b * b_d;
-        let a_y: f32 = r_a * a.d_p + r_b * b_p;
-        let a_z: f32 = r_a * a.d_h + r_b * b_h;
-        let temp_dist = standard_dist(a_x, a_y, a_z, drug.d_d, drug.d_p, drug.d_h);
+    for r_a in (10..=90).step_by(1).map(|r| r as f32 / 100.0) {
+        let r_b = 1.0 - r_a;
+        let a_params = Vector3::new(a.d_d, a.d_p, a.d_h);
+        let mixed_params = a_params.scale(r_a) + b_params.scale(r_b);
+        let temp_dist = standard_dist(
+            mixed_params.x,
+            mixed_params.y,
+            mixed_params.z,
+            drug.d_d,
+            drug.d_p,
+            drug.d_h,
+        );
         let dist_diff = (temp_dist - dist).abs();
+
         if dist_diff <= last_diff {
             last_diff = dist_diff;
             best_r_a = r_a;
-            best_r_b = r_b;
         }
     }
 
-
-    (best_r_a, best_r_b)
+    (best_r_a, 1.0 - best_r_a)
 }
 
 pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
@@ -220,32 +220,30 @@ impl TopN {
             let solvs = solves.clone();
             let mut temp_capacity: usize = max_capacity.clone();
             let solvs_len = solvs.len();
-            let mut top_mixes: Vec<Solution> = Vec::with_capacity(solvs_len * (solvs_len - 1) / 2); 
+            let mut top_mixes: Vec<Solution> = Vec::with_capacity(solvs_len * (solvs_len - 1) / 2);
             println!("Starting Thread: {}", drug.drug);
             let start = Instant::now();
             for (i, solvent_a) in solvs.iter().enumerate() {
                 for solvent_b in solvs.iter().skip(i + 1) {
+                    let (start, end) = line_segment(solvent_a, solvent_b);
+                    let c: f32 = distance(&drug, &start, &end);
+                    let temp_solution = Solution {
+                        mix_id: cantor(solvent_a.id, solvent_b.id),
+                        drug_id: drug.id,
+                        distance: c,
+                    };
 
-                        let (start, end) = line_segment(solvent_a, solvent_b);
-                        let c: f32 = distance(&drug, &start, &end);
-                        let temp_solution = Solution {
-                            mix_id: cantor(solvent_a.id, solvent_b.id),
-                            drug_id: drug.id,
-                            distance: c,
-                        };
+                    top_mixes.push(temp_solution);
 
-                        top_mixes.push(temp_solution);
+                    if top_mixes.len() > temp_capacity {
+                        top_mixes
+                            .sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
+                        top_mixes = top_mixes.split_at(temp_capacity).0.to_vec();
 
-                        if top_mixes.len() > temp_capacity {
-                            top_mixes.sort_by(|a, b| {
-                                a.distance.partial_cmp(&b.distance).unwrap_or(Equal)
-                            });
-                            top_mixes = top_mixes.split_at(temp_capacity).0.to_vec();
-
-                            temp_capacity *= 2;
-                        }
+                        temp_capacity *= 2;
                     }
                 }
+            }
 
             top_mixes.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
@@ -325,7 +323,7 @@ mod tests {
     use float_cmp::approx_eq;
     use nalgebra::Vector3;
 
-   // use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
+    // use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
     use super::*;
 
     #[test]
@@ -396,7 +394,6 @@ mod tests {
         assert!(approx_eq!(f32, 5.0, d, epsilon = 0.001));
     }
 
-
     #[test]
     fn test_mixture() {
         let a = Solvent {
@@ -424,10 +421,95 @@ mod tests {
         let result = mixture(&a, &b, r_a);
         assert_eq!(result.solvent_a, expected.solvent_a);
         assert_eq!(result.solvent_b, expected.solvent_b);
-        assert!(approx_eq!(f32, result.ratio_a, expected.ratio_a, epsilon = 0.001));
-        assert!(approx_eq!(f32, result.ratio_b, expected.ratio_b, epsilon = 0.001));
-        assert!(approx_eq!(f32, result.sol_params.x, expected.sol_params.x, epsilon = 0.001));
-        assert!(approx_eq!(f32, result.sol_params.y, expected.sol_params.y, epsilon = 0.001));
-        assert!(approx_eq!(f32, result.sol_params.z, expected.sol_params.z, epsilon = 0.001));
+        assert!(approx_eq!(
+            f32,
+            result.ratio_a,
+            expected.ratio_a,
+            epsilon = 0.001
+        ));
+        assert!(approx_eq!(
+            f32,
+            result.ratio_b,
+            expected.ratio_b,
+            epsilon = 0.001
+        ));
+        assert!(approx_eq!(
+            f32,
+            result.sol_params.x,
+            expected.sol_params.x,
+            epsilon = 0.001
+        ));
+        assert!(approx_eq!(
+            f32,
+            result.sol_params.y,
+            expected.sol_params.y,
+            epsilon = 0.001
+        ));
+        assert!(approx_eq!(
+            f32,
+            result.sol_params.z,
+            expected.sol_params.z,
+            epsilon = 0.001
+        ));
+    }
+
+    #[test]
+    fn test_mix_solver_a() {
+        let a = Solvent {
+            id: 1,
+            solvent: "solvent1".to_string(),
+            d_d: 1.0,
+            d_p: 2.0,
+            d_h: 3.0,
+        };
+        let b = Solvent {
+            id: 2,
+            solvent: "solvent2".to_string(),
+            d_d: 4.0,
+            d_p: 5.0,
+            d_h: 6.0,
+        };
+        let drug = Drug {
+            id: 1,
+            drug: "drug".to_string(),
+            d_d: 7.0,
+            d_p: 8.0,
+            d_h: 9.0,
+        };
+        let dist = 5.7157;
+
+        let (r_a, r_b) = mix_solver(&a, &b, &drug, dist);
+        assert_eq!(r_a, 0.1, "Expected r_a to be 0.1");
+        assert_eq!(r_b, 0.9, "Expected r_b to be 0.9");
+    }
+    #[test]
+    fn test_mix_solver_b() {
+        let a = Solvent {
+            id: 1,
+            solvent: "solvent1".to_string(),
+            d_d: 1.0,
+            d_p: 2.0,
+            d_h: 3.0,
+        };
+        let b = Solvent {
+            id: 2,
+            solvent: "solvent2".to_string(),
+            d_d: 4.0,
+            d_p: 5.0,
+            d_h: 6.0,
+        };
+        let drug = Drug {
+            id: 1,
+            drug: "drug".to_string(),
+            d_d: 7.0,
+            d_p: 8.0,
+            d_h: 9.0,
+        };
+        let dist = 6.02;
+
+        let (r_a, r_b) = mix_solver(&a, &b, &drug, dist);
+
+        assert!(approx_eq!(f32, r_a, 0.16, epsilon = 0.001));
+        assert!(approx_eq!(f32, r_b, 0.84, epsilon = 0.001));
     }
 }
