@@ -182,7 +182,7 @@ pub fn write_csv<T: serde::Serialize>(data: Vec<T>, path: String) {
     wrt.flush().unwrap();
 }
 
-pub fn read_data<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
+pub fn read_csv<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();
     for result in reader.deserialize() {
@@ -211,8 +211,8 @@ impl TopN {
     }
 
     pub fn calculate(&self) -> Vec<FinalSolution> {
-        let drugs = read_data::<Drug>(self.drugs_file.to_string());
-        let solves = read_data::<Solvent>(self.solves_file.to_string());
+        let drugs = read_csv::<Drug>(self.drugs_file.to_string());
+        let solves = read_csv::<Solvent>(self.solves_file.to_string());
 
         let max_capacity = 100000;
 
