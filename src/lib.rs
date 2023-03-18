@@ -1,6 +1,6 @@
 use csv::Reader;
 
-use log::{debug, error, info};
+use log::{debug, error, info, trace};
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;
@@ -105,7 +105,8 @@ pub fn cantor(a: i32, b: i32) -> i32 {
 
     let sum: i32 = (a + b + 1) * (a + b);
     let triangle_sum: i32 = sum / 2;
-    triangle_sum + a
+    let res = triangle_sum + a;
+    res
 }
 
 pub fn inv_cantor(c: i32) -> (i32, i32) {
@@ -127,6 +128,8 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
     let mut last_diff = f32::INFINITY;
     let mut best_r_a = 0.0;
 
+    let mut best_dist: f32 = f32::INFINITY;
+    debug!{"mix solver for {}, {} for distance {}", a.solvent, b.solvent, dist};
     for r_a in (10..=90).step_by(1).map(|r| r as f32 / 100.0) {
         let r_b = 1.0 - r_a;
         let a_params = Vector3::new(a.d_d, a.d_p, a.d_h);
@@ -144,9 +147,11 @@ pub fn mix_solver(a: &Solvent, b: &Solvent, drug: &Drug, dist: f32) -> (f32, f32
         if dist_diff <= last_diff {
             last_diff = dist_diff;
             best_r_a = r_a;
+            best_dist = temp_dist;
         }
     }
 
+    debug!{"mix solver for {}, {} for distance {}. Found ratio {}, {} with distnce {}", a.solvent, b.solvent, dist, best_r_a, 1.0 - best_r_a, best_dist};
     (best_r_a, 1.0 - best_r_a)
 }
 

@@ -1,6 +1,6 @@
 use clap::{arg, Command};
 use hansen::{write_csv, TopN};
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, info};
 
 fn main() {
     // Initialize logging
@@ -49,11 +49,11 @@ fn main() {
     let sovlents_file_path = matches.get_one::<String>("solvents").expect("required");
     let blend_ratios_path = matches.get_one::<String>("output").unwrap();
 
-    info!("max_results: {}", max_results);
-    info!("n: {}", n);
-    info!("solvents_file_path: {}", sovlents_file_path);
-    info!("drugs_file_path: {}", drugs_file_path);
-    info!("blend_ratios_output_path: {}", blend_ratios_path);
+    debug!("max_results: {}", max_results);
+    debug!("n: {}", n);
+    debug!("solvents_file_path: {}", sovlents_file_path);
+    debug!("drugs_file_path: {}", drugs_file_path);
+    debug!("blend_ratios_output_path: {}", blend_ratios_path);
     let tn: TopN = TopN::new(
         n.to_owned(),
         drugs_file_path.to_owned(),
