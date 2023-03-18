@@ -1,4 +1,6 @@
 use csv::Reader;
+
+use log::{debug, error, info};
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;
@@ -173,6 +175,8 @@ pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
 }
 
 pub fn write_csv<T: serde::Serialize>(data: Vec<T>, path: String) {
+
+    info!("writing to: {}", path);
     let mut wrt = csv::Writer::from_path(path).unwrap();
 
     for item in data {
@@ -183,6 +187,8 @@ pub fn write_csv<T: serde::Serialize>(data: Vec<T>, path: String) {
 }
 
 pub fn read_csv<'a, T: DeserializeOwned>(path: String) -> Vec<T> {
+
+    info!("reading from: {}", path);
     let mut reader = Reader::from_path(path).unwrap();
     let mut drugs: Vec<T> = Vec::new();
     for result in reader.deserialize() {
@@ -221,7 +227,8 @@ impl TopN {
             let mut temp_capacity: usize = max_capacity.clone();
             let solvs_len = solvs.len();
             let mut top_mixes: Vec<Solution> = Vec::with_capacity(solvs_len * (solvs_len - 1) / 2);
-            println!("Starting Thread: {}", drug.drug);
+
+            info!("Starting Thread: {}", drug.drug);
             let start = Instant::now();
             for (i, solvent_a) in solvs.iter().enumerate() {
                 for solvent_b in solvs.iter().skip(i + 1) {
@@ -248,7 +255,8 @@ impl TopN {
             top_mixes.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Equal));
 
             let duration = start.elapsed();
-            println!("Finished Thread: {} in {:?} ", drug.drug, duration);
+
+            info!("Finished Thread: {} in {:?} ", drug.drug, duration);
             top_mixes.split_at(self.n).0.to_vec()
         });
 
