@@ -1,26 +1,15 @@
 use clap::{arg, Command};
 use hansen::{write_csv, TopN};
 use log::{debug, error, info};
+use env_logger::Env;
 
 fn main() {
     // Initialize logging
-    env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     // Parse Input
     let matches = Command::new("solvent_blend")
-        .author("Nathan Thompson")
-        .arg(
-            arg!(--max_results <VALUE>)
-                .help("Number of solvent blends to return")
-                .required(true)
-                .value_parser(clap::value_parser!(usize)),
-        )
-        .arg(
-            arg!(--n <VALUE>)
-                .help("Number of closest solvent blends to return for each drug")
-                .required(true)
-                .value_parser(clap::value_parser!(usize)),
-        )
+        .author("Nathan Thompson") 
         .arg(
             arg!(--solvents <PATH>)
                 .help("Path to csv list of solvents")
@@ -34,6 +23,20 @@ fn main() {
                 .value_parser(clap::value_parser!(String)),
         )
         .arg(
+            arg!(--max_results <VALUE>)
+                .help("Number of solvent blends to return")
+                .required(false)
+                .default_value("100")
+                .value_parser(clap::value_parser!(usize)),
+        )
+        .arg(
+            arg!(--n <VALUE>)
+                .help("Number of closest solvent blends to return for each drug")
+                .required(false)
+                .default_value("100000")
+                .value_parser(clap::value_parser!(usize)),
+        )
+        .arg(
             arg!(--output <PATH>)
                 .help("Path to output results")
                 .required(false)
@@ -42,9 +45,9 @@ fn main() {
         )
         .get_matches();
 
-    let max_results: usize = *matches.get_one::<usize>("max_results").expect("required");
+    let max_results: usize = *matches.get_one::<usize>("max_results").unwrap();
 
-    let n: usize = *matches.get_one::<usize>("n").expect("required");
+    let n: usize = *matches.get_one::<usize>("n").unwrap();
     let drugs_file_path = matches.get_one::<String>("drugs").expect("required");
     let sovlents_file_path = matches.get_one::<String>("solvents").expect("required");
     let blend_ratios_path = matches.get_one::<String>("output").unwrap();
