@@ -1,6 +1,6 @@
 use csv::Reader;
 
-use log::{debug, error, info, trace};
+use log::{debug, info};
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;

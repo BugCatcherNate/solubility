@@ -1,6 +1,6 @@
 use clap::{arg, Command};
 use hansen::{write_csv, TopN};
-use log::{debug, error, info};
+use log::{debug};
 use env_logger::Env;
 
 fn main() {
@@ -65,4 +65,5 @@ fn main() {
     );
     let res = tn.calculate();
     write_csv(res.clone(), blend_ratios_path.to_string());
+
 }
