@@ -172,7 +172,7 @@ pub fn mixture(a: &Solvent, b: &Solvent, r_a: f32) -> SolventMix {
     }
 }
 
-//TODO add tests
+
 pub fn line_segment(a: &Solvent, b: &Solvent) -> (Vector3<f32>, Vector3<f32>) {
     let start: SolventMix = mixture(a, b, 0.9);
     let end: SolventMix = mixture(a, b, 0.1);
