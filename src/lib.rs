@@ -53,6 +53,7 @@ pub struct FinalSolution {
     pub solvent_b_ratio: f32,
     pub hansen_distance: f32,
 }
+
 pub fn distance(drug: &Drug, start: &Vector3<f32>, end: &Vector3<f32>) -> f32 {
     // this function returns a f32 value representing the shortest distance between the Drug and the line segment defined by the start and end points.
     // this function takes in three arguments:
@@ -222,9 +223,17 @@ impl TopN {
     }
 
     pub fn calculate(&self) -> Vec<FinalSolution> {
-        let drugs = read_csv::<Drug>(self.drugs_file.to_string());
-        let solves = read_csv::<Solvent>(self.solves_file.to_string());
-
+        let mut drugs = read_csv::<Drug>(self.drugs_file.to_string());
+        let mut solves = read_csv::<Solvent>(self.solves_file.to_string());
+        let drugs_before_doubled = drugs[0].d_d;
+        let solves_before_doubled = solves[0].d_d;
+        for drug in &mut drugs  {
+              drug.d_d *= 2.0;
+        }
+        for solvent in &mut solves  {
+              solvent.d_d *= 2.0;
+        }
+        assert!((drugs[0].d_d == drugs_before_doubled * 2.0) & (solves[0].d_d == solves_before_doubled * 2.0)); 
         let max_capacity = 100000;
 
         let par_iter = drugs.clone().into_par_iter().map(|drug| {
