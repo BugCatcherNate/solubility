@@ -344,8 +344,6 @@ impl TopN {
 mod tests {
     use float_cmp::approx_eq;
     use nalgebra::Vector3;
-
-    // use crate::{cantor, distance, inv_cantor, standard_dist, Drug};
     use super::*;
 
     #[test]
