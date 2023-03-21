@@ -11,6 +11,21 @@ cargo build --release
 ```bash
 ./target/release/hansen --solvents solvents.csv --drugs drugs.csv --n 100000 --max_results 100
 ```
+***Input Files***
+
+- solvents.csv
+
+|id|solvent|d_d|d_p|d_h|
+|1|"1,1,2,2-Tetrachloroethane"|18.8|5.1|5.3
+|2|"1,1,2-Trichloroethane"|18.2|5.3|6.8|
+
+- drugs.csv
+
+|id|drug|d_d|d_p|d_h|
+|1|6-monoacetylmorphine|19.27|3.01|7.6|
+|2|7-Aminoclonazepam|21.04|13.16|7.11|
+|3|Alpha OH Alprazolam|20.68|9.73|5.96|
+
 ***Parameters***
 
       --solvents <PATH>      Path to csv list of solvents
