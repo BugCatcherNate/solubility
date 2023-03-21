@@ -20,6 +20,23 @@ cargo build --release
       --output <PATH>        Path to output results [default: blend_ratios.csv]
       -h, --help                 Print help
 
+The output will be 2 csv files
+- blend_ratios.csv
+- mix_counts.csv
+
+The blend_ratios.csv will consist of the target drug, the 2 solvents and their ratios needed for the blend and their distance to the drug in hansen space. The ID column is the unique ID of the solvent blend. It can be used to match it to the other output file (mix_counts.csv)
+
+|drug|mix_id|solvent_a|solvent_a_ratio|solvent_b|solvent_b_ratio|hansen_distance|
+|----|----|----|----|------|------|---------|
+|6-monoacetylmorphine|19805600|1-Hydroxy-2-Naphthoic Acid|45.0|a-Methyl Styrene|55.0|0.58334|
+|6-monoacetylmorphine|31457513|"2-Naphthalenecarboxylic Acid, 3-Hydroxy-"|45.0|a-Methyl Styrene|55.0|0.58334|
+
+The mix_counts.csv will consist of the solvent blend ID and the number of solvents that it was in the top blends for based on the parameter specified by --n
+
+|Blend ID| count|
+|-------|-------|
+|2935058|9|
+|26358408|9|
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
