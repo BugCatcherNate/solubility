@@ -211,7 +211,7 @@ pub struct TopN {
     max_results: usize,
 }
 
-//TODO write tests
+
 impl TopN {
     pub fn new(n: usize, drugs_file: String, solves_file: String, max_results: usize) -> Self {
         Self {
