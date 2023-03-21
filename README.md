@@ -6,6 +6,13 @@ This is a rust application created for finding the top combinations of two compo
 cd solubility
 cargo build --release
 ```
+## Run Tests With
+
+```bash
+cd solubility
+cargo test
+```
+
 ## Usage
 
 ```bash
